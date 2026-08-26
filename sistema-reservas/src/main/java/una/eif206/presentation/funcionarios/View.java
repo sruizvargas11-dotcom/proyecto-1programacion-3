@@ -18,6 +18,7 @@ public class View implements PropertyChangeListener {
     private JTextField telefonoFld;
     private JTextField busquedaFld;
     private JButton guardarFld;
+    private JButton modificarFld;
     private JButton cancelarFld;
     private JButton buscarFld;
     private JButton borrarFld;
@@ -27,25 +28,27 @@ public class View implements PropertyChangeListener {
     Model model;
 
     public View() {
-        panel       = new JPanel(new BorderLayout(5, 5));
-        idFld       = new JTextField(10);
-        nombreFld   = new JTextField(20);
-        telefonoFld = new JTextField(15);
-        busquedaFld = new JTextField(15);
-        guardarFld  = new JButton("Guardar");
-        cancelarFld = new JButton("Limpiar");
-        buscarFld   = new JButton("Buscar");
-        borrarFld   = new JButton("Borrar");
-        tabla       = new JTable();
+        panel        = new JPanel(new BorderLayout(5, 5));
+        idFld        = new JTextField(10);
+        nombreFld    = new JTextField(20);
+        telefonoFld  = new JTextField(15);
+        busquedaFld  = new JTextField(15);
+        guardarFld   = new JButton("Guardar");
+        modificarFld = new JButton("Modificar");
+        cancelarFld  = new JButton("Limpiar");
+        buscarFld    = new JButton("Buscar");
+        borrarFld    = new JButton("Borrar");
+        tabla        = new JTable();
 
         JPanel form = new JPanel(new GridLayout(5, 2, 5, 5));
-        form.add(new JLabel("ID:"));        form.add(idFld);
-        form.add(new JLabel("Nombre:"));    form.add(nombreFld);
-        form.add(new JLabel("Teléfono:")); form.add(telefonoFld);
-        form.add(new JLabel("Buscar:"));    form.add(busquedaFld);
+        form.add(new JLabel("ID:"));       form.add(idFld);
+        form.add(new JLabel("Nombre:"));   form.add(nombreFld);
+        form.add(new JLabel("Telefono:")); form.add(telefonoFld);
+        form.add(new JLabel("Buscar:"));   form.add(busquedaFld);
 
         JPanel botones = new JPanel();
         botones.add(guardarFld);
+        botones.add(modificarFld);
         botones.add(cancelarFld);
         botones.add(buscarFld);
         botones.add(borrarFld);
@@ -61,19 +64,28 @@ public class View implements PropertyChangeListener {
                     controller.create(take());
                     JOptionPane.showMessageDialog(panel, "REGISTRO APLICADO");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(),
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        modificarFld.addActionListener(e -> {
+            if (validate()) {
+                try {
+                    controller.update(take());
+                    JOptionPane.showMessageDialog(panel, "REGISTRO MODIFICADO");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
         cancelarFld.addActionListener(e -> controller.clear());
 
-        buscarFld.addActionListener(e ->
-                controller.search(busquedaFld.getText()));
+        buscarFld.addActionListener(e -> controller.search(busquedaFld.getText()));
 
         borrarFld.addActionListener(e -> {
-            int op = JOptionPane.showConfirmDialog(panel, "¿Confirma borrar?");
+            int op = JOptionPane.showConfirmDialog(panel, "Confirma borrar?");
             if (op == JOptionPane.YES_OPTION) {
                 try {
                     controller.delete(model.getCurrent());
@@ -98,13 +110,8 @@ public class View implements PropertyChangeListener {
     }
 
     public JPanel getPanel() { return panel; }
-
     public void setController(Controller c) { this.controller = c; }
-
-    public void setModel(Model m) {
-        this.model = m;
-        model.addPropertyChangeListener(this);
-    }
+    public void setModel(Model m) { this.model = m; model.addPropertyChangeListener(this); }
 
     public Funcionario take() {
         Funcionario f = new Funcionario();

@@ -42,4 +42,9 @@ public class Controller {
         f.setNombre(nombre);
         model.setList(Service.instance().searchFuncionarios(f));
     }
+    public void update(Funcionario f) throws Exception {
+        Service.instance().updateFuncionario(f);
+        model.setCurrent(new Funcionario());
+        model.setList(Service.instance().findAllFuncionarios());
+    }
 }

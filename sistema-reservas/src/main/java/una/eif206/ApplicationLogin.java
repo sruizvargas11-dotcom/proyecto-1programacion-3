@@ -31,14 +31,10 @@ public class ApplicationLogin extends JFrame {
 
         tabs = new JTabbedPane();
 
-        // ── Módulo Funcionarios ──
         View fView   = new View();
         Model fModel = new Model();
         new Controller(fView, fModel);
         tabs.addTab("Funcionarios", fView.getPanel());
-
-        // E2 agrega categorias aquí cuando termine
-        // E3 agrega recursos y reservas aquí cuando termine
 
         add(tabs);
     }

@@ -113,4 +113,34 @@ public class Service {
                 .filter(i -> i.getFuncionario().getId().equals(f.getId()))
                 .collect(Collectors.toList());
     }
+    // ── CAMBIAR CLAVE ──
+    public void cambiarClave(Usuario u, String claveActual, String claveNueva)
+            throws Exception {
+        if (!u.getClave().equals(claveActual)) {
+            throw new Exception("Clave actual incorrecta");
+        }
+        u.setClave(claveNueva);
+    }
+
+    // ── UPDATE FUNCIONARIO ──
+    public void updateFuncionario(Funcionario f) throws Exception {
+        Funcionario result = data.getFuncionarios().stream()
+                .filter(i -> i.getId().equals(f.getId()))
+                .findFirst().orElse(null);
+        if (result != null) {
+            result.setNombre(f.getNombre());
+            result.setTelefono(f.getTelefono());
+            result.setDepartamento(f.getDepartamento());
+        } else {
+            throw new Exception("Funcionario no encontrado");
+        }
+    }
+
+    // ── FIND FUNCIONARIO BY ID ──
+    public Funcionario findFuncionarioById(String id) throws Exception {
+        return data.getFuncionarios().stream()
+                .filter(i -> i.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new Exception("Funcionario no encontrado"));
+    }
 }
