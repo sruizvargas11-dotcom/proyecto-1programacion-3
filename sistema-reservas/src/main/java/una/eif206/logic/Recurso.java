@@ -10,29 +10,34 @@ public class Recurso {
 
     @XmlID
     private String id;
-    private String nombre;
+    private String descripcion;
     @XmlIDREF
     private CategoriaRecurso categoria;
+    private boolean disponible;
 
-    public Recurso(String id, String nombre, CategoriaRecurso categoria) {
+    public Recurso(String id, String descripcion, CategoriaRecurso categoria) {
         this.id = id;
-        this.nombre = nombre;
+        this.descripcion = descripcion;
         this.categoria = categoria;
+        this.disponible = true;
     }
 
     public Recurso() {
         this.id = "";
-        this.nombre = "";
+        this.descripcion = "";
         this.categoria = null;
+        this.disponible = true;
     }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String d) { this.descripcion = d; }
     public CategoriaRecurso getCategoria() { return categoria; }
     public void setCategoria(CategoriaRecurso c) { this.categoria = c; }
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean d) { this.disponible = d; }
 
     @Override
-    public String toString() { return nombre; }
+    public String toString() { return descripcion; }
 }

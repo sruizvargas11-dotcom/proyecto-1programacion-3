@@ -1,11 +1,7 @@
 package una.eif206.data;
 
 import jakarta.xml.bind.annotation.*;
-import una.eif206.logic.Admin;
-import una.eif206.logic.Funcionario;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Recurso;
-import una.eif206.logic.Reserva;
+import una.eif206.logic.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,17 +30,31 @@ public class Data {
     @XmlElement(name = "reserva")
     private List<Reserva> reservas;
 
+    private int categoriaCounter = 4;
+
     public Data() {
         admins = new ArrayList<>();
-        admins.add(new Admin("ADM001", "admin123"));
+        admins.add(new Admin("admin", "admin123"));
 
         funcionarios = new ArrayList<>();
-        funcionarios.add(new Funcionario("F001", "Juan Pérez", "TI"));
-        funcionarios.add(new Funcionario("F002", "María López", "RRHH"));
+        funcionarios.add(new Funcionario("111", "Juan Perez", "TI", "3323"));
+        funcionarios.add(new Funcionario("222", "Maria Lopez", "RRHH", "4444"));
 
         categorias = new ArrayList<>();
+        categorias.add(new CategoriaRecurso("CAT-000001", "Laptop windows"));
+        categorias.add(new CategoriaRecurso("CAT-000002", "Sala de Juntas"));
+        categorias.add(new CategoriaRecurso("CAT-000003", "Sala para 10 personas"));
+
         recursos = new ArrayList<>();
+        recursos.add(new Recurso("238715", "Laptop #238715", categorias.get(0)));
+        recursos.add(new Recurso("45238",  "Laptop #45238",  categorias.get(0)));
+        recursos.add(new Recurso("34343",  "Sala 1 primer piso", categorias.get(1)));
+
         reservas = new ArrayList<>();
+    }
+
+    public String generarIdCategoria() {
+        return String.format("CAT-%06d", categoriaCounter++);
     }
 
     public List<Admin> getAdmins() { return admins; }

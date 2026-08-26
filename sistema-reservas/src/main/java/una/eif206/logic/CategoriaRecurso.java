@@ -9,22 +9,20 @@ public class CategoriaRecurso {
 
     @XmlID
     private String id;
-    private String nombre;
+    private String descripcion;
 
-    public CategoriaRecurso(String id, String nombre) {
+    public CategoriaRecurso(String id, String descripcion) {
         this.id = id;
-        this.nombre = nombre;
+        this.descripcion = descripcion;
     }
 
-    public CategoriaRecurso() {
-        this("", "");
-    }
+    public CategoriaRecurso() { this("", ""); }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String d) { this.descripcion = d; }
 
     @Override
-    public String toString() { return nombre; }
+    public String toString() { return descripcion; }
 }

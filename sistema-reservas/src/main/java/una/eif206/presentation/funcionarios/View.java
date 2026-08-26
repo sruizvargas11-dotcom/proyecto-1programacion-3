@@ -15,7 +15,7 @@ public class View implements PropertyChangeListener {
     private JPanel panel;
     private JTextField idFld;
     private JTextField nombreFld;
-    private JTextField departamentoFld;
+    private JTextField telefonoFld;
     private JTextField busquedaFld;
     private JButton guardarFld;
     private JButton cancelarFld;
@@ -27,22 +27,22 @@ public class View implements PropertyChangeListener {
     Model model;
 
     public View() {
-        panel           = new JPanel(new BorderLayout(5, 5));
-        idFld           = new JTextField(10);
-        nombreFld       = new JTextField(20);
-        departamentoFld = new JTextField(15);
-        busquedaFld     = new JTextField(15);
-        guardarFld      = new JButton("Guardar");
-        cancelarFld     = new JButton("Limpiar");
-        buscarFld       = new JButton("Buscar");
-        borrarFld       = new JButton("Borrar");
-        tabla           = new JTable();
+        panel       = new JPanel(new BorderLayout(5, 5));
+        idFld       = new JTextField(10);
+        nombreFld   = new JTextField(20);
+        telefonoFld = new JTextField(15);
+        busquedaFld = new JTextField(15);
+        guardarFld  = new JButton("Guardar");
+        cancelarFld = new JButton("Limpiar");
+        buscarFld   = new JButton("Buscar");
+        borrarFld   = new JButton("Borrar");
+        tabla       = new JTable();
 
         JPanel form = new JPanel(new GridLayout(5, 2, 5, 5));
-        form.add(new JLabel("ID:"));           form.add(idFld);
-        form.add(new JLabel("Nombre:"));       form.add(nombreFld);
-        form.add(new JLabel("Departamento:")); form.add(departamentoFld);
-        form.add(new JLabel("Buscar:"));       form.add(busquedaFld);
+        form.add(new JLabel("ID:"));        form.add(idFld);
+        form.add(new JLabel("Nombre:"));    form.add(nombreFld);
+        form.add(new JLabel("Teléfono:")); form.add(telefonoFld);
+        form.add(new JLabel("Buscar:"));    form.add(busquedaFld);
 
         JPanel botones = new JPanel();
         botones.add(guardarFld);
@@ -73,7 +73,7 @@ public class View implements PropertyChangeListener {
                 controller.search(busquedaFld.getText()));
 
         borrarFld.addActionListener(e -> {
-            int op = JOptionPane.showConfirmDialog(panel, "Confirma borrar?");
+            int op = JOptionPane.showConfirmDialog(panel, "¿Confirma borrar?");
             if (op == JOptionPane.YES_OPTION) {
                 try {
                     controller.delete(model.getCurrent());
@@ -94,7 +94,7 @@ public class View implements PropertyChangeListener {
         Highlighter h = new Highlighter(Color.green);
         idFld.addMouseListener(h);
         nombreFld.addMouseListener(h);
-        departamentoFld.addMouseListener(h);
+        telefonoFld.addMouseListener(h);
     }
 
     public JPanel getPanel() { return panel; }
@@ -110,7 +110,7 @@ public class View implements PropertyChangeListener {
         Funcionario f = new Funcionario();
         f.setId(idFld.getText());
         f.setNombre(nombreFld.getText());
-        f.setDepartamento(departamentoFld.getText());
+        f.setTelefono(telefonoFld.getText());
         return f;
     }
 
@@ -119,15 +119,11 @@ public class View implements PropertyChangeListener {
         if (idFld.getText().isEmpty()) {
             valid = false;
             idFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-        } else {
-            idFld.setBackground(null);
-        }
+        } else { idFld.setBackground(null); }
         if (nombreFld.getText().isEmpty()) {
             valid = false;
             nombreFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-        } else {
-            nombreFld.setBackground(null);
-        }
+        } else { nombreFld.setBackground(null); }
         return valid;
     }
 
@@ -135,13 +131,13 @@ public class View implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
             case Model.LIST:
-                int[] cols = {TableModel.ID, TableModel.NOMBRE, TableModel.DEPARTAMENTO};
+                int[] cols = {TableModel.ID, TableModel.NOMBRE, TableModel.TELEFONO};
                 tabla.setModel(new TableModel(cols, model.getList()));
                 break;
             case Model.CURRENT:
                 idFld.setText(model.getCurrent().getId());
                 nombreFld.setText(model.getCurrent().getNombre());
-                departamentoFld.setText(model.getCurrent().getDepartamento());
+                telefonoFld.setText(model.getCurrent().getTelefono());
                 idFld.setBackground(null);
                 nombreFld.setBackground(null);
                 break;
