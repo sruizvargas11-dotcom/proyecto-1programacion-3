@@ -38,7 +38,7 @@ public class ApplicationLogin extends JFrame {
 
         add(tabs);
     }
-
+//Prueba de configuracion de rama Thomas
     private static void doLogin() {
         una.eif206.presentation.login.View loginView =
                 new una.eif206.presentation.login.View();
