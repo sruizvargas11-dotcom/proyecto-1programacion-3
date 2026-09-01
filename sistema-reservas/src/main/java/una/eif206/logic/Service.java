@@ -71,6 +71,7 @@ public class Service {
 
     // ── CATEGORIAS ──
     public void createCategoria(CategoriaRecurso e) throws Exception {
+        e.setId(data.generarIdCategoria());
         CategoriaRecurso result = data.getCategorias().stream()
                 .filter(i -> i.getId().equals(e.getId()))
                 .findFirst().orElse(null);
@@ -80,6 +81,29 @@ public class Service {
 
     public List<CategoriaRecurso> findAllCategorias() {
         return data.getCategorias();
+    }
+
+    public List<CategoriaRecurso> searchCategorias(CategoriaRecurso e) {
+        return data.getCategorias().stream()
+                .filter(i -> i.getDescripcion().toLowerCase()
+                        .contains(e.getDescripcion().toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public void deleteCategoria(CategoriaRecurso e) throws Exception {
+        if (!data.getCategorias().remove(e))
+            throw new Exception("Categoría no encontrada");
+    }
+
+    public void updateCategoria(CategoriaRecurso c) throws Exception {
+        CategoriaRecurso result = data.getCategorias().stream()
+                .filter(i -> i.getId().equals(c.getId()))
+                .findFirst().orElse(null);
+        if (result != null) {
+            result.setDescripcion(c.getDescripcion());
+        } else {
+            throw new Exception("Categoría no encontrada");
+        }
     }
 
     // ── RECURSOS ──
@@ -93,6 +117,29 @@ public class Service {
 
     public List<Recurso> findAllRecursos() {
         return data.getRecursos();
+    }
+
+    public void deleteRecurso(Recurso e) throws Exception {
+        if (!data.getRecursos().remove(e))
+            throw new Exception("Recurso no encontrado");
+    }
+
+    public void updateRecurso(Recurso r) throws Exception {
+        Recurso result = data.getRecursos().stream()
+                .filter(i -> i.getId().equals(r.getId()))
+                .findFirst().orElse(null);
+        if (result != null) {
+            result.setDescripcion(r.getDescripcion());
+            result.setCategoria(r.getCategoria());
+        } else {
+            throw new Exception("Recurso no encontrado");
+        }
+    }
+
+    public List<Recurso> findRecursosByCategoria(CategoriaRecurso c) {
+        return data.getRecursos().stream()
+                .filter(i -> i.getCategoria().getId().equals(c.getId()))
+                .collect(Collectors.toList());
     }
 
     // ── RESERVAS ──
