@@ -18,7 +18,4 @@ public class Controller {
         model.setFechaReferencia(fechaReferencia);
         model.setMatriz(Service.instance().getActividadesSemana(fechaReferencia));
     }
-    public Map<String, Map<String, String>> getActividadesSemana(String fechaReferencia) {
-        return new LinkedHashMap<>(); // TODO: implementar de verdad
-    }
 }
