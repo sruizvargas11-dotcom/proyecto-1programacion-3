@@ -2,7 +2,11 @@ package una.eif206.logic;
 import una.eif206.logic.enums.EstadoReserva;
 import una.eif206.data.Data;
 import una.eif206.data.XMLHelper;
+import una.eif206.logic.enums.EstadoReserva;
 
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -71,6 +75,7 @@ public class Service {
 
     // ── CATEGORIAS ──
     public void createCategoria(CategoriaRecurso e) throws Exception {
+        e.setId(data.generarIdCategoria());
         CategoriaRecurso result = data.getCategorias().stream()
                 .filter(i -> i.getId().equals(e.getId()))
                 .findFirst().orElse(null);
@@ -80,6 +85,29 @@ public class Service {
 
     public List<CategoriaRecurso> findAllCategorias() {
         return data.getCategorias();
+    }
+
+    public List<CategoriaRecurso> searchCategorias(CategoriaRecurso e) {
+        return data.getCategorias().stream()
+                .filter(i -> i.getDescripcion().toLowerCase()
+                        .contains(e.getDescripcion().toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
+    public void deleteCategoria(CategoriaRecurso e) throws Exception {
+        if (!data.getCategorias().remove(e))
+            throw new Exception("Categoría no encontrada");
+    }
+
+    public void updateCategoria(CategoriaRecurso c) throws Exception {
+        CategoriaRecurso result = data.getCategorias().stream()
+                .filter(i -> i.getId().equals(c.getId()))
+                .findFirst().orElse(null);
+        if (result != null) {
+            result.setDescripcion(c.getDescripcion());
+        } else {
+            throw new Exception("Categoría no encontrada");
+        }
     }
 
     // ── RECURSOS ──
@@ -93,6 +121,29 @@ public class Service {
 
     public List<Recurso> findAllRecursos() {
         return data.getRecursos();
+    }
+
+    public void deleteRecurso(Recurso e) throws Exception {
+        if (!data.getRecursos().remove(e))
+            throw new Exception("Recurso no encontrado");
+    }
+
+    public void updateRecurso(Recurso r) throws Exception {
+        Recurso result = data.getRecursos().stream()
+                .filter(i -> i.getId().equals(r.getId()))
+                .findFirst().orElse(null);
+        if (result != null) {
+            result.setDescripcion(r.getDescripcion());
+            result.setCategoria(r.getCategoria());
+        } else {
+            throw new Exception("Recurso no encontrado");
+        }
+    }
+
+    public List<Recurso> findRecursosByCategoria(CategoriaRecurso c) {
+        return data.getRecursos().stream()
+                .filter(i -> i.getCategoria().getId().equals(c.getId()))
+                .collect(Collectors.toList());
     }
 
     // ── RESERVAS ──
@@ -113,6 +164,36 @@ public class Service {
                 .filter(i -> i.getFuncionario().getId().equals(f.getId()))
                 .collect(Collectors.toList());
     }
+
+    // ── ESTADISTICAS ──
+    public Map<String, Integer> getEstadisticasRecursos(String desde, String hasta) throws Exception {
+        LocalDate d1 = LocalDate.parse(desde);
+        LocalDate d2 = LocalDate.parse(hasta);
+        Map<String, Integer> resultado = new LinkedHashMap<>();
+        for (Reserva r : data.getReservas()) {
+            if (r.getEstado() == EstadoReserva.CANCELADA) continue;
+            LocalDate fecha = LocalDate.parse(r.getFecha());
+            if (fecha.isBefore(d1) || fecha.isAfter(d2)) continue;
+            for (Recurso rec : r.getRecursos()) {
+                resultado.merge(rec.getDescripcion(), 1, Integer::sum);
+            }
+        }
+        return resultado;
+    }
+
+    public Map<String, Integer> getEstadisticasActividades(String desde, String hasta) throws Exception {
+        LocalDate d1 = LocalDate.parse(desde);
+        LocalDate d2 = LocalDate.parse(hasta);
+        Map<String, Integer> resultado = new LinkedHashMap<>();
+        for (Reserva r : data.getReservas()) {
+            if (r.getEstado() == EstadoReserva.CANCELADA) continue;
+            LocalDate fecha = LocalDate.parse(r.getFecha());
+            if (fecha.isBefore(d1) || fecha.isAfter(d2)) continue;
+            resultado.merge(r.getActividad(), 1, Integer::sum);
+        }
+        return resultado;
+    }
+
     // ── CAMBIAR CLAVE ──
     public void cambiarClave(Usuario u, String claveActual, String claveNueva)
             throws Exception {
