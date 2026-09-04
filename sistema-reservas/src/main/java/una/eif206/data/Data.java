@@ -31,6 +31,7 @@ public class Data {
     private List<Reserva> reservas;
 
     private int categoriaCounter = 4;
+    private int reservaCounter = 1;
 
     public Data() {
         admins = new ArrayList<>();
@@ -55,6 +56,9 @@ public class Data {
 
     public String generarIdCategoria() {
         return String.format("CAT-%06d", categoriaCounter++);
+    }
+    public String generarIdReserva() {
+        return String.format("RES-%06d", reservaCounter++);
     }
 
     public List<Admin> getAdmins() { return admins; }
