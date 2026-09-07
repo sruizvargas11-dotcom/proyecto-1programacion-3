@@ -3,6 +3,7 @@ package una.eif206.presentation.calendarizacion;
 import una.eif206.ApplicationLogin;
 import una.eif206.logic.CategoriaRecurso;
 import una.eif206.logic.Recurso;
+import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -17,6 +18,7 @@ public class View implements PropertyChangeListener {
     private JTextField fechaFld;
     private JComboBox<CategoriaRecurso> categoriaFld;
     private JButton cargarFld;
+    private JButton imprimirFld;
     private JTable tabla;
 
     Controller controller;
@@ -27,6 +29,7 @@ public class View implements PropertyChangeListener {
         fechaFld     = new JTextField(10);
         categoriaFld = new JComboBox<>();
         cargarFld    = new JButton("Cargar");
+        imprimirFld  = new JButton("Imprimir PDF");
         tabla        = new JTable();
         tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -36,6 +39,7 @@ public class View implements PropertyChangeListener {
         filtros.add(new JLabel("Categoria:"));
         filtros.add(categoriaFld);
         filtros.add(cargarFld);
+        filtros.add(imprimirFld);
 
         panel.add(filtros, BorderLayout.NORTH);
         panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
@@ -43,15 +47,18 @@ public class View implements PropertyChangeListener {
         cargarFld.addActionListener(e -> {
             try {
                 controller.cargar(
-                    fechaFld.getText(),
-                    (CategoriaRecurso) categoriaFld.getSelectedItem()
+                        fechaFld.getText(),
+                        (CategoriaRecurso) categoriaFld.getSelectedItem()
                 );
             } catch (Exception ex) {
                 fechaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
                 JOptionPane.showMessageDialog(panel, ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                        "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+
+        imprimirFld.addActionListener(e ->
+                PdfReporter.imprimirDesdeTabla(panel, "Reporte de Calendarización", tabla));
     }
 
     public JPanel getPanel() { return panel; }

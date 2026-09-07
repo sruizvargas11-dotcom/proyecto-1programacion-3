@@ -6,11 +6,14 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import una.eif206.ApplicationLogin;
+import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class View implements PropertyChangeListener {
@@ -19,6 +22,7 @@ public class View implements PropertyChangeListener {
     private JTextField desdeFld;
     private JTextField hastaFld;
     private JButton generarFld;
+    private JButton imprimirFld;
     private ChartPanel panelRecursos;
     private ChartPanel panelActividades;
 
@@ -30,6 +34,7 @@ public class View implements PropertyChangeListener {
         desdeFld   = new JTextField(10);
         hastaFld   = new JTextField(10);
         generarFld = new JButton("Generar");
+        imprimirFld = new JButton("Imprimir PDF");
 
         JPanel filtros = new JPanel();
         filtros.add(new JLabel("Desde (yyyy-MM-dd):"));
@@ -37,6 +42,7 @@ public class View implements PropertyChangeListener {
         filtros.add(new JLabel("Hasta (yyyy-MM-dd):"));
         filtros.add(hastaFld);
         filtros.add(generarFld);
+        filtros.add(imprimirFld);
 
         JFreeChart chartRecursos = ChartFactory.createBarChart(
                 "Recursos más reservados", "Recurso", "Cantidad",
@@ -65,6 +71,25 @@ public class View implements PropertyChangeListener {
                     JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+        });
+
+        imprimirFld.addActionListener(e -> {
+            List<String[]> filasRecursos = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : model.getDatosRecursos().entrySet()) {
+                filasRecursos.add(new String[]{entry.getKey(), String.valueOf(entry.getValue())});
+            }
+            List<String[]> filasActividades = new ArrayList<>();
+            for (Map.Entry<String, Integer> entry : model.getDatosActividades().entrySet()) {
+                filasActividades.add(new String[]{entry.getKey(), String.valueOf(entry.getValue())});
+            }
+
+            List<PdfReporter.Seccion> secciones = new ArrayList<>();
+            secciones.add(new PdfReporter.Seccion("Recursos más reservados",
+                    new String[]{"Recurso", "Cantidad"}, filasRecursos));
+            secciones.add(new PdfReporter.Seccion("Actividades más frecuentes",
+                    new String[]{"Actividad", "Cantidad"}, filasActividades));
+
+            PdfReporter.imprimirMultiple(panel, "Reporte de Estadísticas", secciones);
         });
     }
 

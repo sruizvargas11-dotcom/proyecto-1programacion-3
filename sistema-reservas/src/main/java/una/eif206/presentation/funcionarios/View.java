@@ -3,12 +3,15 @@ package una.eif206.presentation.funcionarios;
 import una.eif206.ApplicationLogin;
 import una.eif206.logic.Funcionario;
 import una.eif206.presentation.Highlighter;
+import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 
 public class View implements PropertyChangeListener {
 
@@ -22,6 +25,7 @@ public class View implements PropertyChangeListener {
     private JButton cancelarFld;
     private JButton buscarFld;
     private JButton borrarFld;
+    private JButton imprimirFld;
     private JTable tabla;
 
     Controller controller;
@@ -38,6 +42,7 @@ public class View implements PropertyChangeListener {
         cancelarFld  = new JButton("Limpiar");
         buscarFld    = new JButton("Buscar");
         borrarFld    = new JButton("Borrar");
+        imprimirFld  = new JButton("Imprimir PDF");
         tabla        = new JTable();
 
         JPanel form = new JPanel(new GridLayout(5, 2, 5, 5));
@@ -52,6 +57,7 @@ public class View implements PropertyChangeListener {
         botones.add(cancelarFld);
         botones.add(buscarFld);
         botones.add(borrarFld);
+        botones.add(imprimirFld);
         form.add(new JLabel(""));
         form.add(botones);
 
@@ -101,6 +107,15 @@ public class View implements PropertyChangeListener {
                 int row = tabla.getSelectedRow();
                 if (row >= 0) controller.edit(row);
             }
+        });
+
+        imprimirFld.addActionListener(e -> {
+            String[] columnas = {"ID", "Nombre", "Teléfono"};
+            List<String[]> filas = new ArrayList<>();
+            for (Funcionario f : model.getList()) {
+                filas.add(new String[]{f.getId(), f.getNombre(), f.getTelefono()});
+            }
+            PdfReporter.imprimir(panel, "Reporte de Funcionarios", columnas, filas);
         });
 
         Highlighter h = new Highlighter(Color.green);

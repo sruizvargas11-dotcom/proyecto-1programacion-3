@@ -5,6 +5,7 @@ import una.eif206.logic.CategoriaRecurso;
 import una.eif206.logic.Reserva;
 import una.eif206.logic.enums.EstadoReserva;
 import una.eif206.presentation.Highlighter;
+import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,6 +25,7 @@ public class View implements PropertyChangeListener {
     private JButton guardarFld;
     private JButton cancelarReservaFld;
     private JButton limpiarFld;
+    private JButton imprimirFld;
     private JTable tabla;
 
     Controller controller;
@@ -40,6 +42,7 @@ public class View implements PropertyChangeListener {
         guardarFld           = new JButton("Crear reserva");
         cancelarReservaFld   = new JButton("Cancelar reserva");
         limpiarFld           = new JButton("Limpiar");
+        imprimirFld          = new JButton("Imprimir PDF");
         tabla                = new JTable();
 
         categoriasList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -57,6 +60,7 @@ public class View implements PropertyChangeListener {
         botones.add(guardarFld);
         botones.add(cancelarReservaFld);
         botones.add(limpiarFld);
+        botones.add(imprimirFld);
 
         JPanel top = new JPanel(new BorderLayout(5, 5));
         top.add(form, BorderLayout.CENTER);
@@ -103,6 +107,9 @@ public class View implements PropertyChangeListener {
                 if (row >= 0) controller.edit(row);
             }
         });
+
+        imprimirFld.addActionListener(e ->
+                PdfReporter.imprimirDesdeTabla(panel, "Reporte de Reservas", tabla));
 
         Highlighter h = new Highlighter(Color.green);
         actividadFld.addMouseListener(h);
@@ -174,4 +181,3 @@ public class View implements PropertyChangeListener {
         panel.revalidate();
     }
 }
-

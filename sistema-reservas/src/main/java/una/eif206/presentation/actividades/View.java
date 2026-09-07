@@ -1,6 +1,7 @@
 package una.eif206.presentation.actividades;
 
 import una.eif206.ApplicationLogin;
+import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,6 +20,7 @@ public class View implements PropertyChangeListener {
     private JPanel panel;
     private JTextField fechaFld;
     private JButton cargarFld;
+    private JButton imprimirFld;
     private JTable tabla;
     private DefaultTableModel tableModel;
 
@@ -29,6 +31,7 @@ public class View implements PropertyChangeListener {
         panel     = new JPanel(new BorderLayout(5, 5));
         fechaFld  = new JTextField(10);
         cargarFld = new JButton("Cargar semana");
+        imprimirFld = new JButton("Imprimir PDF");
         tabla     = new JTable();
 
         tableModel = new DefaultTableModel();
@@ -42,6 +45,7 @@ public class View implements PropertyChangeListener {
         top.add(new JLabel("Fecha de referencia (yyyy-MM-dd):"));
         top.add(fechaFld);
         top.add(cargarFld);
+        top.add(imprimirFld);
 
         panel.add(top, BorderLayout.NORTH);
         panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
@@ -58,6 +62,9 @@ public class View implements PropertyChangeListener {
                 JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+
+        imprimirFld.addActionListener(e ->
+                PdfReporter.imprimirDesdeTabla(panel, "Reporte de Actividades", tabla));
     }
 
     public JPanel getPanel() { return panel; }
