@@ -1,8 +1,32 @@
 package una.eif206;
 
+import una.eif206.controller.ActividadesController;
+import una.eif206.controller.CalendarizacionController;
+import una.eif206.controller.CategoriasController;
+import una.eif206.controller.EstadisticasController;
+import una.eif206.controller.FuncionariosController;
+import una.eif206.controller.LoginController;
+import una.eif206.controller.RecursosController;
+import una.eif206.controller.ReservasController;
 import una.eif206.logic.Service;
 import una.eif206.logic.enums.UsuarioRol;
-import una.eif206.presentation.Sesion;
+import una.eif206.model.ActividadesModel;
+import una.eif206.model.CalendarizacionModel;
+import una.eif206.model.CategoriasModel;
+import una.eif206.model.EstadisticasModel;
+import una.eif206.model.FuncionariosModel;
+import una.eif206.model.LoginModel;
+import una.eif206.model.RecursosModel;
+import una.eif206.model.ReservasModel;
+import una.eif206.util.Sesion;
+import una.eif206.view.ActividadesView;
+import una.eif206.view.CalendarizacionView;
+import una.eif206.view.CategoriasView;
+import una.eif206.view.EstadisticasView;
+import una.eif206.view.FuncionariosView;
+import una.eif206.view.LoginView;
+import una.eif206.view.RecursosView;
+import una.eif206.view.ReservasView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,33 +55,33 @@ public class ApplicationLogin extends JFrame {
         tabs = new JTabbedPane();
 
         // ?? Crear todos los MVCs ??
-        una.eif206.presentation.funcionarios.View fView = new una.eif206.presentation.funcionarios.View();
-        una.eif206.presentation.funcionarios.Model fModel = new una.eif206.presentation.funcionarios.Model();
-        new una.eif206.presentation.funcionarios.Controller(fView, fModel);
+        FuncionariosView fView = new FuncionariosView();
+        FuncionariosModel fModel = new FuncionariosModel();
+        new FuncionariosController(fView, fModel);
 
-        una.eif206.presentation.categorias.View catView = new una.eif206.presentation.categorias.View();
-        una.eif206.presentation.categorias.Model catModel = new una.eif206.presentation.categorias.Model();
-        new una.eif206.presentation.categorias.Controller(catView, catModel);
+        CategoriasView catView = new CategoriasView();
+        CategoriasModel catModel = new CategoriasModel();
+        new CategoriasController(catView, catModel);
 
-        una.eif206.presentation.recursos.View recView = new una.eif206.presentation.recursos.View();
-        una.eif206.presentation.recursos.Model recModel = new una.eif206.presentation.recursos.Model();
-        new una.eif206.presentation.recursos.Controller(recView, recModel);
+        RecursosView recView = new RecursosView();
+        RecursosModel recModel = new RecursosModel();
+        new RecursosController(recView, recModel);
 
-        una.eif206.presentation.reservas.View resView = new una.eif206.presentation.reservas.View();
-        una.eif206.presentation.reservas.Model resModel = new una.eif206.presentation.reservas.Model();
-        new una.eif206.presentation.reservas.Controller(resView, resModel);
+        ReservasView resView = new ReservasView();
+        ReservasModel resModel = new ReservasModel();
+        new ReservasController(resView, resModel);
 
-        una.eif206.presentation.calendarizacion.View calView = new una.eif206.presentation.calendarizacion.View();
-        una.eif206.presentation.calendarizacion.Model calModel = new una.eif206.presentation.calendarizacion.Model();
-        new una.eif206.presentation.calendarizacion.Controller(calView, calModel);
+        CalendarizacionView calView = new CalendarizacionView();
+        CalendarizacionModel calModel = new CalendarizacionModel();
+        new CalendarizacionController(calView, calModel);
 
-        una.eif206.presentation.actividades.View actView = new una.eif206.presentation.actividades.View();
-        una.eif206.presentation.actividades.Model actModel = new una.eif206.presentation.actividades.Model();
-        new una.eif206.presentation.actividades.Controller(actView, actModel);
+        ActividadesView actView = new ActividadesView();
+        ActividadesModel actModel = new ActividadesModel();
+        new ActividadesController(actView, actModel);
 
-        una.eif206.presentation.estadisticas.View estView = new una.eif206.presentation.estadisticas.View();
-        una.eif206.presentation.estadisticas.Model estModel = new una.eif206.presentation.estadisticas.Model();
-        new una.eif206.presentation.estadisticas.Controller(estView, estModel);
+        EstadisticasView estView = new EstadisticasView();
+        EstadisticasModel estModel = new EstadisticasModel();
+        new EstadisticasController(estView, estModel);
 
         // ?? Tabs segun rol ??
         switch (Sesion.getUsuario().getRol()) {
@@ -81,9 +105,9 @@ public class ApplicationLogin extends JFrame {
     }
 
     private static void doLogin() {
-        una.eif206.presentation.login.View loginView = new una.eif206.presentation.login.View();
-        una.eif206.presentation.login.Model loginModel = new una.eif206.presentation.login.Model();
-        new una.eif206.presentation.login.Controller(loginView, loginModel);
+        LoginView loginView = new LoginView();
+        LoginModel loginModel = new LoginModel();
+        new LoginController(loginView, loginModel);
         loginView.setVisible(true);
     }
 

@@ -19,24 +19,9 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Clase utilitaria para generar reportes PDF en cualquier módulo del sistema.
- * Uso típico desde una View:
- *
- *   String[] columnas = {"ID", "Descripción"};
- *   List<String[]> filas = new ArrayList<>();
- *   for (CategoriaRecurso c : model.getList()) {
- *       filas.add(new String[]{c.getId(), c.getDescripcion()});
- *   }
- *   PdfReporter.imprimir(panel, "Reporte de Categorías", columnas, filas);
- */
 public class PdfReporter {
 
-    /**
-     * Abre un diálogo para elegir dónde guardar, genera el PDF y muestra
-     * un mensaje de éxito o error. Este es el método que deben llamar
-     * los botones "Imprimir" de cada View.
-     */
+
     public static void imprimir(Component parent, String titulo, String[] columnas, List<String[]> filas) {
         JFileChooser chooser = new JFileChooser();
         String nombreSugerido = titulo.replaceAll("[^a-zA-Z0-9]", "_") + ".pdf";
@@ -154,12 +139,7 @@ public class PdfReporter {
         doc.close();
     }
 
-    /**
-     * Genera el PDF leyendo directamente lo que está pintado en una JTable.
-     * Ideal para módulos con matrices dinámicas (Calendarización, Actividades),
-     * donde reconstruir las columnas a mano sería más frágil que leerlas
-     * directamente de la tabla ya armada.
-     */
+
     public static void imprimirDesdeTabla(Component parent, String titulo, JTable tabla) {
         int colCount = tabla.getColumnCount();
         String[] columnas = new String[colCount];

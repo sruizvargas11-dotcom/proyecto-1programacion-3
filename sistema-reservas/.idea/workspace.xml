@@ -7,6 +7,42 @@
     <list default="true" id="c6b4b9a3-e7e3-4a08-9f39-bc9b8cec94ac" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/ApplicationLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/ApplicationLogin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Recurso.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Recurso.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/AbstractModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/AbstractTableModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/Highlighter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/Sesion.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/TableModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/TableModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/TableModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/Controller.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/TableModel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/View.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,23 +83,24 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.ApplicationLogin.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;e1&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;C:/Users/sruiz/proyecto-1programacion-3/sistema-reservas/src/main/java/una/eif206/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.ApplicationLogin.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "e1",
+    "kotlin-language-version-configured": "true",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "C:/Users/sruiz/proyecto-1programacion-3/sistema-reservas/src/main/java/una/eif206/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

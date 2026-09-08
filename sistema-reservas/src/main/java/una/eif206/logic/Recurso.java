@@ -23,6 +23,7 @@ public class Recurso {
     }
 
     public Recurso() {
+
         this.id = "";
         this.descripcion = "";
         this.categoria = null;
