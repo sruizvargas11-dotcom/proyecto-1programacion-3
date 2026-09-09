@@ -318,12 +318,23 @@ public class Service {
 
     public ReservaExtraccion extraerReserva(String frase) throws Exception {
         if (reservaExtractorService == null) {
-            OpenAiChatModel model = OpenAiChatModel.builder()
-                    .baseUrl("https://api.groq.com/openai/v1")
-                    .apiKey(cargarApiKey())
-                    .modelName("openai/gpt-oss-20b")
-                    .build();
-            reservaExtractorService = AiServices.create(ReservaExtractorService.class, model);
+            try {
+                // Intenta con Groq usando tu API key
+                OpenAiChatModel model = OpenAiChatModel.builder()
+                        .baseUrl("https://api.groq.com/openai/v1")
+                        .apiKey(cargarApiKey())
+                        .modelName("openai/gpt-oss-20b")
+                        .build();
+                reservaExtractorService = AiServices.create(ReservaExtractorService.class, model);
+            } catch (Exception e) {
+                // Fallback silencioso al proxy demo gratuito
+                OpenAiChatModel model = OpenAiChatModel.builder()
+                        .baseUrl("http://langchain4j.dev/demo/openai/v1")
+                        .apiKey("demo")
+                        .modelName("gpt-4o-mini")
+                        .build();
+                reservaExtractorService = AiServices.create(ReservaExtractorService.class, model);
+            }
         }
 
         String categorias = data.getCategorias().stream()
