@@ -108,6 +108,8 @@ public class ApplicationLogin extends JFrame {
         }
 
         JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel botonesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
         JButton cambiarClaveBtn = new JButton("Cambiar Clave");
         cambiarClaveBtn.addActionListener(e -> {
             CambiarClaveView cv = new CambiarClaveView();
@@ -115,10 +117,35 @@ public class ApplicationLogin extends JFrame {
             new CambiarClaveController(cv, cm, Sesion.getUsuario());
             cv.setVisible(true);
         });
-        topPanel.add(cambiarClaveBtn, BorderLayout.EAST);
+
+        JButton cerrarSesionBtn = new JButton("Cerrar Sesion");
+        cerrarSesionBtn.addActionListener(e -> {
+            int opcion = JOptionPane.showConfirmDialog(this,
+                    "Esta seguro que desea cerrar sesion?",
+                    "Cerrar Sesion", JOptionPane.YES_NO_OPTION);
+            if (opcion == JOptionPane.YES_OPTION) {
+                cerrarSesion();
+            }
+        });
+
+        botonesPanel.add(cambiarClaveBtn);
+        botonesPanel.add(cerrarSesionBtn);
+        topPanel.add(botonesPanel, BorderLayout.EAST);
 
         add(topPanel, BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
+    }
+
+    private void cerrarSesion() {
+        Sesion.logout();
+        dispose();
+
+        SwingUtilities.invokeLater(() -> {
+            doLogin();
+            if (Sesion.isLoggedIn()) {
+                new ApplicationLogin().setVisible(true);
+            }
+        });
     }
 
     private static void doLogin() {
