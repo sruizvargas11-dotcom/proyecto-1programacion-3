@@ -7,11 +7,9 @@
     <list default="true" id="c6b4b9a3-e7e3-4a08-9f39-bc9b8cec94ac" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data.xml" beforeDir="false" afterPath="$PROJECT_DIR$/data.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/controller/ReservasController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/controller/ReservasController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Service.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/util/PdfReporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/util/PdfReporter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/view/ReservasView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/view/ReservasView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/una/eif206/ServiceIntegrationIT.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/una/eif206/ServiceIntegrationIT.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/una/eif206/ServiceTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/una/eif206/ServiceTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

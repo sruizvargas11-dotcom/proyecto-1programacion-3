@@ -168,8 +168,26 @@ public class Service {
         Reserva result = data.getReservas().stream()
                 .filter(i -> i.getId().equals(e.getId()))
                 .findFirst().orElse(null);
-        if (result == null) data.getReservas().add(e);
-        else throw new Exception("Reserva ya existe");
+        if (result != null) throw new Exception("Reserva ya existe");
+        if (e.getRecursos() != null && !e.getRecursos().isEmpty()) {
+            boolean ocupado = data.getReservas().stream()
+                    .filter(r -> r.getEstado() != EstadoReserva.CANCELADA)
+                    .filter(r -> r.getFecha().equals(e.getFecha()))
+                    .filter(r -> r.getRecursos() != null &&
+                            r.getRecursos().stream().anyMatch(rec -> e.getRecursos().contains(rec)))
+                    .anyMatch(r -> horariosSolapan(r.getHoraInicio(), r.getHoraFin(), e.getHoraInicio(), e.getHoraFin()));
+            if (ocupado) throw new Exception("No hay disponibilidad para el recurso en ese horario");
+        }
+        data.getReservas().add(e);
+    }
+
+    private boolean horariosSolapan(String inicioA, String finA, String inicioB, String finB) {
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("H:mm");
+        LocalTime a1 = LocalTime.parse(inicioA, formato);
+        LocalTime a2 = LocalTime.parse(finA, formato);
+        LocalTime b1 = LocalTime.parse(inicioB, formato);
+        LocalTime b2 = LocalTime.parse(finB, formato);
+        return a1.isBefore(b2) && b1.isBefore(a2);
     }
 
     public List<Reserva> findAllReservas() { return data.getReservas(); }
