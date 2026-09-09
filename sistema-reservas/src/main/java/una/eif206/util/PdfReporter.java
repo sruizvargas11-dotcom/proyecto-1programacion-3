@@ -41,12 +41,6 @@ public class PdfReporter {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    /**
-     * Genera el archivo PDF directamente en la ruta indicada, sin diálogo.
-     * Útil si algún módulo necesita más control (por ejemplo, generar
-     * varios reportes seguidos sin preguntar cada vez).
-     */
     public static void generar(String titulo, String[] columnas, List<String[]> filas, String rutaArchivo) throws Exception {
         Document doc = new Document();
         PdfWriter.getInstance(doc, new FileOutputStream(rutaArchivo));

@@ -2,6 +2,7 @@ package una.eif206.view;
 
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.ActividadesController;
+import una.eif206.logic.Service;
 import una.eif206.model.ActividadesModel;
 import una.eif206.util.PdfReporter;
 
@@ -10,14 +11,16 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class ActividadesView implements PropertyChangeListener {
 
-    private static final String[] DIAS = {
-            "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"
-    };
+    private static final String[] DIAS = Service.NOMBRES_DIAS;
+    private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:mm");
 
     private JPanel panel;
     private JTextField fechaFld;
@@ -86,7 +89,9 @@ public class ActividadesView implements PropertyChangeListener {
         if (matriz == null) {
             return;
         }
-        Map<String, Map<String, String>> ordenado = new TreeMap<>(matriz);
+        Map<String, Map<String, String>> ordenado = new TreeMap<>(
+                Comparator.comparing(h -> LocalTime.parse(h, FORMATO_HORA)));
+        ordenado.putAll(matriz);
         for (Map.Entry<String, Map<String, String>> fila : ordenado.entrySet()) {
             Object[] row = new Object[DIAS.length + 1];
             row[0] = fila.getKey();

@@ -2,6 +2,7 @@ package una.eif206;
 
 import una.eif206.controller.ActividadesController;
 import una.eif206.controller.CalendarizacionController;
+import una.eif206.controller.CambiarClaveController;
 import una.eif206.controller.CategoriasController;
 import una.eif206.controller.EstadisticasController;
 import una.eif206.controller.FuncionariosController;
@@ -9,9 +10,9 @@ import una.eif206.controller.LoginController;
 import una.eif206.controller.RecursosController;
 import una.eif206.controller.ReservasController;
 import una.eif206.logic.Service;
-import una.eif206.logic.enums.UsuarioRol;
 import una.eif206.model.ActividadesModel;
 import una.eif206.model.CalendarizacionModel;
+import una.eif206.model.CambiarClaveModel;
 import una.eif206.model.CategoriasModel;
 import una.eif206.model.EstadisticasModel;
 import una.eif206.model.FuncionariosModel;
@@ -21,6 +22,7 @@ import una.eif206.model.ReservasModel;
 import una.eif206.util.Sesion;
 import una.eif206.view.ActividadesView;
 import una.eif206.view.CalendarizacionView;
+import una.eif206.view.CambiarClaveView;
 import una.eif206.view.CategoriasView;
 import una.eif206.view.EstadisticasView;
 import una.eif206.view.FuncionariosView;
@@ -38,6 +40,10 @@ public class ApplicationLogin extends JFrame {
     private JTabbedPane tabs;
 
     public ApplicationLogin() {
+        if (Sesion.getUsuario() == null) {
+            throw new IllegalStateException("No hay usuario en sesion");
+        }
+
         setTitle("Sistema de Reserva de Recursos - " +
             Sesion.getUsuario().getId() + " (" +
             Sesion.getUsuario().getRol() + ")");
@@ -101,7 +107,18 @@ public class ApplicationLogin extends JFrame {
                 break;
         }
 
-        add(tabs);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JButton cambiarClaveBtn = new JButton("Cambiar Clave");
+        cambiarClaveBtn.addActionListener(e -> {
+            CambiarClaveView cv = new CambiarClaveView();
+            CambiarClaveModel cm = new CambiarClaveModel();
+            new CambiarClaveController(cv, cm, Sesion.getUsuario());
+            cv.setVisible(true);
+        });
+        topPanel.add(cambiarClaveBtn, BorderLayout.EAST);
+
+        add(topPanel, BorderLayout.NORTH);
+        add(tabs, BorderLayout.CENTER);
     }
 
     private static void doLogin() {

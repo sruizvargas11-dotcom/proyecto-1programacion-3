@@ -1,15 +1,23 @@
 package una.eif206.logic;
 
+import dev.langchain4j.model.openai.OpenAiChatModel;
+import dev.langchain4j.service.AiServices;
 import una.eif206.data.Data;
 import una.eif206.data.XMLHelper;
 import una.eif206.logic.enums.EstadoReserva;
+import una.eif206.util.ReservaExtraccion;
+import una.eif206.util.ReservaExtractorService;
 
+import javax.swing.JOptionPane;
+import java.io.InputStream;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class Service {
@@ -28,6 +36,9 @@ public class Service {
             data = XMLHelper.instance().load();
         } catch (Exception e) {
             data = new Data();
+            JOptionPane.showMessageDialog(null,
+                    "No se pudo cargar data.xml. Se iniciara con datos vacios.",
+                    "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -35,7 +46,9 @@ public class Service {
         try {
             XMLHelper.instance().store(data);
         } catch (Exception e) {
-            System.out.println(e);
+            JOptionPane.showMessageDialog(null,
+                    "Error al guardar los datos: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -209,7 +222,7 @@ public class Service {
 
     // ACTIVIDADES
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ISO_LOCAL_DATE;
-    private static final String[] NOMBRES_DIAS = {
+    public static final String[] NOMBRES_DIAS = {
             "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"
     };
 
@@ -268,10 +281,11 @@ public class Service {
 
     private boolean horaEnRango(String hora, String inicio, String fin) {
         try {
-            int h = Integer.parseInt(hora.replace(":00", ""));
-            int i = Integer.parseInt(inicio.split(":")[0]);
-            int f = Integer.parseInt(fin.split(":")[0]);
-            return h >= i && h < f;
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("H:mm");
+            LocalTime h = LocalTime.parse(hora, formato);
+            LocalTime i = LocalTime.parse(inicio, formato);
+            LocalTime f = LocalTime.parse(fin, formato);
+            return !h.isBefore(i) && h.isBefore(f);
         } catch (Exception e) { return false; }
     }
 
@@ -279,5 +293,41 @@ public class Service {
     public void cambiarClave(Usuario u, String claveActual, String claveNueva) throws Exception {
         if (!u.getClave().equals(claveActual)) throw new Exception("Clave actual incorrecta");
         u.setClave(claveNueva);
+    }
+
+    // EXTRACCION DE RESERVAS CON IA
+    private ReservaExtractorService reservaExtractorService;
+
+    public ReservaExtraccion extraerReserva(String frase) throws Exception {
+        if (reservaExtractorService == null) {
+            OpenAiChatModel model = OpenAiChatModel.builder()
+                    .baseUrl("https://api.groq.com/openai/v1")
+                    .apiKey(cargarApiKey())
+                    .modelName("openai/gpt-oss-20b")
+                    .build();
+            reservaExtractorService = AiServices.create(ReservaExtractorService.class, model);
+        }
+
+        String categorias = data.getCategorias().stream()
+                .map(CategoriaRecurso::getDescripcion)
+                .collect(Collectors.joining(", "));
+        String hoy = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        return reservaExtractorService.extraer(frase, categorias, hoy);
+    }
+
+    private String cargarApiKey() throws Exception {
+        Properties propiedades = new Properties();
+        try (InputStream is = Service.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (is == null) {
+                throw new Exception("No se encontro config.properties con la API key de Groq");
+            }
+            propiedades.load(is);
+        }
+        String key = propiedades.getProperty("groq.api.key");
+        if (key == null || key.isEmpty() || key.equals("YOUR_KEY_HERE")) {
+            throw new Exception("Debe configurar groq.api.key en config.properties");
+        }
+        return key;
     }
 }

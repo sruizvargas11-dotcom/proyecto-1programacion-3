@@ -6,43 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="c6b4b9a3-e7e3-4a08-9f39-bc9b8cec94ac" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/ApplicationLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/ApplicationLogin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Recurso.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Recurso.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/AbstractModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/AbstractTableModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/Highlighter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/Sesion.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/actividades/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/calendarizacion/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/cambiarclave/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/TableModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/categorias/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/estadisticas/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/TableModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/funcionarios/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/login/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/TableModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/recursos/View.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/Controller.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/TableModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/presentation/reservas/View.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data.xml" beforeDir="false" afterPath="$PROJECT_DIR$/data.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/controller/ReservasController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/controller/ReservasController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Service.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/logic/Service.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/util/PdfReporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/util/PdfReporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/una/eif206/view/ReservasView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/una/eif206/view/ReservasView.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,6 +55,8 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.ApplicationLogin.executor": "Run",
+    "JUnit.ServiceIntegrationIT.executor": "Run",
+    "JUnit.ServiceTest.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",

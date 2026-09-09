@@ -9,9 +9,12 @@ import una.eif206.logic.Usuario;
 import una.eif206.logic.enums.EstadoReserva;
 import una.eif206.logic.enums.UsuarioRol;
 import una.eif206.model.ReservasModel;
+import una.eif206.util.ReservaExtraccion;
 import una.eif206.util.Sesion;
 import una.eif206.view.ReservasView;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,9 @@ public class ReservasController {
 
     public Reserva create(String actividad, String fecha, String horaInicio,
                           String horaFin, List<CategoriaRecurso> categoriasSeleccionadas) throws Exception {
+        if (!(Sesion.getUsuario() instanceof Funcionario)) {
+            throw new Exception("Solo un funcionario puede crear reservas");
+        }
         Funcionario funcionario = (Funcionario) Sesion.getUsuario();
 
         List<Recurso> recursos = new ArrayList<>();
@@ -72,6 +78,10 @@ public class ReservasController {
         model.setCurrent(new Reserva());
     }
 
+    public ReservaExtraccion extraerConIA(String frase) throws Exception {
+        return Service.instance().extraerReserva(frase);
+    }
+
     public void edit(int row) {
         model.setCurrent(model.getList().get(row));
     }
@@ -98,6 +108,11 @@ public class ReservasController {
     }
 
     private boolean seSolapan(String inicioA, String finA, String inicioB, String finB) {
-        return inicioA.compareTo(finB) < 0 && inicioB.compareTo(finA) < 0;
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("H:mm");
+        LocalTime a1 = LocalTime.parse(inicioA, formato);
+        LocalTime a2 = LocalTime.parse(finA, formato);
+        LocalTime b1 = LocalTime.parse(inicioB, formato);
+        LocalTime b2 = LocalTime.parse(finB, formato);
+        return a1.isBefore(b2) && b1.isBefore(a2);
     }
 }
