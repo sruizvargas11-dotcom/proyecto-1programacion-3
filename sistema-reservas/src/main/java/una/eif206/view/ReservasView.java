@@ -1,5 +1,6 @@
 package una.eif206.view;
 
+import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.ReservasController;
 import una.eif206.logic.CategoriaRecurso;
@@ -8,6 +9,7 @@ import una.eif206.logic.enums.EstadoReserva;
 import una.eif206.model.ReservasModel;
 import una.eif206.model.ReservasTableModel;
 import una.eif206.util.Highlighter;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 import una.eif206.util.ReservaExtraccion;
 
@@ -16,6 +18,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -23,10 +27,11 @@ import java.time.format.DateTimeParseException;
 public class ReservasView implements PropertyChangeListener {
 
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:mm");
+    private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
 
     private JPanel panel;
     private JTextField actividadFld;
-    private JTextField fechaFld;
+    private JDateChooser fechaFld;
     private JTextField horaInicioFld;
     private JTextField horaFinFld;
     private JTextField fraseFld;
@@ -45,7 +50,9 @@ public class ReservasView implements PropertyChangeListener {
     public ReservasView() {
         panel               = new JPanel(new BorderLayout(5, 5));
         actividadFld        = new JTextField(20);
-        fechaFld             = new JTextField(10);
+        fechaFld             = new JDateChooser();
+        fechaFld.setDateFormatString("yyyy-MM-dd");
+        fechaFld.setPreferredSize(new Dimension(120, 25));
         horaInicioFld        = new JTextField(5);
         horaFinFld           = new JTextField(5);
         fraseFld             = new JTextField(20);
@@ -56,13 +63,18 @@ public class ReservasView implements PropertyChangeListener {
         limpiarFld           = new JButton("Limpiar");
         imprimirFld          = new JButton("Imprimir PDF");
         extraerIAFld         = new JButton("Extraer AI");
+        guardarFld.setIcon(IconLoader.load("crear"));
+        cancelarReservaFld.setIcon(IconLoader.load("cancelar"));
+        limpiarFld.setIcon(IconLoader.load("limpiar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
+        extraerIAFld.setIcon(IconLoader.load("buscar"));
         tabla                = new JTable();
 
         categoriasList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         JPanel form = new JPanel(new GridLayout(4, 2, 5, 5));
         form.add(new JLabel("Actividad:"));             form.add(actividadFld);
-        form.add(new JLabel("Fecha (yyyy-MM-dd):"));     form.add(fechaFld);
+        form.add(new JLabel("Fecha:"));                  form.add(fechaFld);
         form.add(new JLabel("Hora inicio (HH:mm):"));    form.add(horaInicioFld);
         form.add(new JLabel("Hora fin (HH:mm):"));       form.add(horaFinFld);
 
@@ -95,7 +107,7 @@ public class ReservasView implements PropertyChangeListener {
         guardarFld.addActionListener(e -> {
             if (validate()) {
                 try {
-                    controller.create(actividadFld.getText(), fechaFld.getText(),
+                    controller.create(actividadFld.getText(), FORMATO_ISO.format(fechaFld.getDate()),
                             horaInicioFld.getText(), horaFinFld.getText(),
                             categoriasList.getSelectedValuesList());
                     JOptionPane.showMessageDialog(panel, "RESERVA CREADA");
@@ -143,7 +155,13 @@ public class ReservasView implements PropertyChangeListener {
             try {
                 ReservaExtraccion extraccion = controller.extraerConIA(frase);
                 if (extraccion.getActividad() != null) actividadFld.setText(extraccion.getActividad());
-                if (extraccion.getFecha() != null) fechaFld.setText(extraccion.getFecha());
+                if (extraccion.getFecha() != null) {
+                    try {
+                        fechaFld.setDate(FORMATO_ISO.parse(extraccion.getFecha()));
+                    } catch (ParseException pe) {
+                        // Si la IA devuelve un formato inesperado, se deja el campo tal cual
+                    }
+                }
                 if (extraccion.getHoraInicio() != null) horaInicioFld.setText(extraccion.getHoraInicio());
                 if (extraccion.getHoraFinal() != null) horaFinFld.setText(extraccion.getHoraFinal());
             } catch (Exception ex) {
@@ -153,7 +171,6 @@ public class ReservasView implements PropertyChangeListener {
 
         Highlighter h = new Highlighter(Color.green);
         actividadFld.addMouseListener(h);
-        fechaFld.addMouseListener(h);
         horaInicioFld.addMouseListener(h);
         horaFinFld.addMouseListener(h);
     }
@@ -165,7 +182,12 @@ public class ReservasView implements PropertyChangeListener {
     private boolean validate() {
         boolean valid = true;
         valid &= checkField(actividadFld);
-        valid &= checkField(fechaFld);
+        if (fechaFld.getDate() == null) {
+            valid = false;
+            fechaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
+        } else {
+            fechaFld.setBackground(null);
+        }
         boolean horaInicioValida = checkHoraField(horaInicioFld);
         boolean horaFinValida = checkHoraField(horaFinFld);
         valid &= horaInicioValida;
@@ -215,7 +237,7 @@ public class ReservasView implements PropertyChangeListener {
 
     private void limpiarFormulario() {
         actividadFld.setText("");
-        fechaFld.setText("");
+        fechaFld.setDate(null);
         horaInicioFld.setText("");
         horaFinFld.setText("");
         actividadFld.setBackground(null);

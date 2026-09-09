@@ -7,6 +7,7 @@ import una.eif206.logic.Recurso;
 import una.eif206.model.RecursosModel;
 import una.eif206.model.RecursosTableModel;
 import una.eif206.util.Highlighter;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
@@ -54,7 +55,13 @@ public class RecursosView implements PropertyChangeListener {
         form.add(new JLabel("Descripción:")); form.add(descripcionFld);
         form.add(new JLabel("Categoría:"));   form.add(categoriaFld);
 
-        JPanel botones = new JPanel();
+        guardarFld.setIcon(IconLoader.load("guardar"));
+        modificarFld.setIcon(IconLoader.load("modificar"));
+        cancelarFld.setIcon(IconLoader.load("limpiar"));
+        borrarFld.setIcon(IconLoader.load("borrar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
+
+        JPanel botones = new JPanel(new GridLayout(2, 3, 5, 5));
         botones.add(guardarFld);
         botones.add(modificarFld);
         botones.add(cancelarFld);

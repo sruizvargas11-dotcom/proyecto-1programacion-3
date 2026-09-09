@@ -6,6 +6,7 @@ import una.eif206.logic.Funcionario;
 import una.eif206.model.FuncionariosModel;
 import una.eif206.model.FuncionariosTableModel;
 import una.eif206.util.Highlighter;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
@@ -54,7 +55,14 @@ public class FuncionariosView implements PropertyChangeListener {
         form.add(new JLabel("Telefono:")); form.add(telefonoFld);
         form.add(new JLabel("Buscar:"));   form.add(busquedaFld);
 
-        JPanel botones = new JPanel();
+        guardarFld.setIcon(IconLoader.load("guardar"));
+        modificarFld.setIcon(IconLoader.load("modificar"));
+        cancelarFld.setIcon(IconLoader.load("limpiar"));
+        buscarFld.setIcon(IconLoader.load("buscar"));
+        borrarFld.setIcon(IconLoader.load("borrar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
+
+        JPanel botones = new JPanel(new GridLayout(2, 3, 5, 5));
         botones.add(guardarFld);
         botones.add(modificarFld);
         botones.add(cancelarFld);

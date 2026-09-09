@@ -1,5 +1,6 @@
 package una.eif206.view;
 
+import com.toedter.calendar.JDateChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -8,21 +9,25 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.EstadisticasController;
 import una.eif206.model.EstadisticasModel;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class EstadisticasView implements PropertyChangeListener {
 
+    private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
+
     private JPanel panel;
-    private JTextField desdeFld;
-    private JTextField hastaFld;
+    private JDateChooser desdeFld;
+    private JDateChooser hastaFld;
     private JButton generarFld;
     private JButton imprimirFld;
     private ChartPanel panelRecursos;
@@ -33,15 +38,21 @@ public class EstadisticasView implements PropertyChangeListener {
 
     public EstadisticasView() {
         panel      = new JPanel(new BorderLayout(5, 5));
-        desdeFld   = new JTextField(10);
-        hastaFld   = new JTextField(10);
+        desdeFld   = new JDateChooser();
+        hastaFld   = new JDateChooser();
+        desdeFld.setDateFormatString("yyyy-MM-dd");
+        hastaFld.setDateFormatString("yyyy-MM-dd");
+        desdeFld.setPreferredSize(new Dimension(120, 25));
+        hastaFld.setPreferredSize(new Dimension(120, 25));
         generarFld = new JButton("Generar");
         imprimirFld = new JButton("Imprimir PDF");
+        generarFld.setIcon(IconLoader.load("generar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
 
         JPanel filtros = new JPanel();
-        filtros.add(new JLabel("Desde (yyyy-MM-dd):"));
+        filtros.add(new JLabel("Desde:"));
         filtros.add(desdeFld);
-        filtros.add(new JLabel("Hasta (yyyy-MM-dd):"));
+        filtros.add(new JLabel("Hasta:"));
         filtros.add(hastaFld);
         filtros.add(generarFld);
         filtros.add(imprimirFld);
@@ -68,7 +79,9 @@ public class EstadisticasView implements PropertyChangeListener {
         generarFld.addActionListener(e -> {
             if (validate()) {
                 try {
-                    controller.generar(desdeFld.getText(), hastaFld.getText());
+                    String desde = FORMATO_ISO.format(desdeFld.getDate());
+                    String hasta = FORMATO_ISO.format(hastaFld.getDate());
+                    controller.generar(desde, hasta);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -101,11 +114,11 @@ public class EstadisticasView implements PropertyChangeListener {
 
     private boolean validate() {
         boolean valid = true;
-        if (desdeFld.getText().isEmpty()) {
+        if (desdeFld.getDate() == null) {
             valid = false;
             desdeFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
         } else { desdeFld.setBackground(null); }
-        if (hastaFld.getText().isEmpty()) {
+        if (hastaFld.getDate() == null) {
             valid = false;
             hastaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
         } else { hastaFld.setBackground(null); }

@@ -45,9 +45,9 @@ public class ApplicationLogin extends JFrame {
         }
 
         setTitle("Sistema de Reserva de Recursos - " +
-            Sesion.getUsuario().getId() + " (" +
-            Sesion.getUsuario().getRol() + ")");
-        setSize(900, 600);
+                Sesion.getUsuario().getId() + " (" +
+                Sesion.getUsuario().getRol() + ")");
+        setSize(1050, 680);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -60,7 +60,7 @@ public class ApplicationLogin extends JFrame {
 
         tabs = new JTabbedPane();
 
-        // ?? Crear todos los MVCs ??
+        //  Crear todos los MVCs
         FuncionariosView fView = new FuncionariosView();
         FuncionariosModel fModel = new FuncionariosModel();
         new FuncionariosController(fView, fModel);
@@ -89,7 +89,7 @@ public class ApplicationLogin extends JFrame {
         EstadisticasModel estModel = new EstadisticasModel();
         new EstadisticasController(estView, estModel);
 
-        // ?? Tabs segun rol ??
+        //  Tabs segun rol
         switch (Sesion.getUsuario().getRol()) {
             case ADMIN:
                 tabs.addTab("Funcionarios",    fView.getPanel());

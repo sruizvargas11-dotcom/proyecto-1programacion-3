@@ -1,9 +1,11 @@
 package una.eif206.view;
 
+import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.ActividadesController;
 import una.eif206.logic.Service;
 import una.eif206.model.ActividadesModel;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
@@ -11,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -21,9 +24,10 @@ public class ActividadesView implements PropertyChangeListener {
 
     private static final String[] DIAS = Service.NOMBRES_DIAS;
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:mm");
+    private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
 
     private JPanel panel;
-    private JTextField fechaFld;
+    private JDateChooser fechaFld;
     private JButton cargarFld;
     private JButton imprimirFld;
     private JTable tabla;
@@ -34,9 +38,13 @@ public class ActividadesView implements PropertyChangeListener {
 
     public ActividadesView() {
         panel     = new JPanel(new BorderLayout(5, 5));
-        fechaFld  = new JTextField(10);
+        fechaFld  = new JDateChooser();
+        fechaFld.setDateFormatString("yyyy-MM-dd");
+        fechaFld.setPreferredSize(new Dimension(120, 25));
         cargarFld = new JButton("Cargar semana");
         imprimirFld = new JButton("Imprimir PDF");
+        cargarFld.setIcon(IconLoader.load("cargar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
         tabla     = new JTable();
 
         tableModel = new DefaultTableModel();
@@ -47,7 +55,7 @@ public class ActividadesView implements PropertyChangeListener {
         tabla.setModel(tableModel);
 
         JPanel top = new JPanel();
-        top.add(new JLabel("Fecha de referencia (yyyy-MM-dd):"));
+        top.add(new JLabel("Fecha de referencia:"));
         top.add(fechaFld);
         top.add(cargarFld);
         top.add(imprimirFld);
@@ -56,13 +64,13 @@ public class ActividadesView implements PropertyChangeListener {
         panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
 
         cargarFld.addActionListener(e -> {
-            if (fechaFld.getText().isEmpty()) {
+            if (fechaFld.getDate() == null) {
                 fechaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
                 return;
             }
             fechaFld.setBackground(null);
             try {
-                controller.cargarSemana(fechaFld.getText());
+                controller.cargarSemana(FORMATO_ISO.format(fechaFld.getDate()));
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }

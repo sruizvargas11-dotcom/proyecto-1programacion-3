@@ -6,6 +6,7 @@ import una.eif206.logic.CategoriaRecurso;
 import una.eif206.model.CategoriasModel;
 import una.eif206.model.CategoriasTableModel;
 import una.eif206.util.Highlighter;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
@@ -48,12 +49,19 @@ public class CategoriasView implements PropertyChangeListener {
 
         idFld.setEditable(false);
 
+        guardarFld.setIcon(IconLoader.load("guardar"));
+        modificarFld.setIcon(IconLoader.load("modificar"));
+        cancelarFld.setIcon(IconLoader.load("limpiar"));
+        buscarFld.setIcon(IconLoader.load("buscar"));
+        borrarFld.setIcon(IconLoader.load("borrar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
+
         JPanel form = new JPanel(new GridLayout(4, 2, 5, 5));
         form.add(new JLabel("ID:"));          form.add(idFld);
         form.add(new JLabel("Descripción:")); form.add(descripcionFld);
         form.add(new JLabel("Buscar:"));      form.add(busquedaFld);
 
-        JPanel botones = new JPanel();
+        JPanel botones = new JPanel(new GridLayout(2, 3, 5, 5));
         botones.add(guardarFld);
         botones.add(modificarFld);
         botones.add(cancelarFld);

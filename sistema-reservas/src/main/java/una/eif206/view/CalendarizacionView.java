@@ -1,10 +1,12 @@
 package una.eif206.view;
 
+import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.CalendarizacionController;
 import una.eif206.logic.CategoriaRecurso;
 import una.eif206.logic.Recurso;
 import una.eif206.model.CalendarizacionModel;
+import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
@@ -12,12 +14,15 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class CalendarizacionView implements PropertyChangeListener {
 
+    private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
+
     private JPanel panel;
-    private JTextField fechaFld;
+    private JDateChooser fechaFld;
     private JComboBox<CategoriaRecurso> categoriaFld;
     private JButton cargarFld;
     private JButton imprimirFld;
@@ -28,15 +33,19 @@ public class CalendarizacionView implements PropertyChangeListener {
 
     public CalendarizacionView() {
         panel        = new JPanel(new BorderLayout(5, 5));
-        fechaFld     = new JTextField(10);
+        fechaFld     = new JDateChooser();
+        fechaFld.setDateFormatString("yyyy-MM-dd");
+        fechaFld.setPreferredSize(new Dimension(120, 25));
         categoriaFld = new JComboBox<>();
         cargarFld    = new JButton("Cargar");
         imprimirFld  = new JButton("Imprimir PDF");
+        cargarFld.setIcon(IconLoader.load("cargar"));
+        imprimirFld.setIcon(IconLoader.load("imprimir"));
         tabla        = new JTable();
         tabla.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filtros.add(new JLabel("Fecha (yyyy-MM-dd):"));
+        filtros.add(new JLabel("Fecha:"));
         filtros.add(fechaFld);
         filtros.add(new JLabel("Categoria:"));
         filtros.add(categoriaFld);
@@ -48,8 +57,9 @@ public class CalendarizacionView implements PropertyChangeListener {
 
         cargarFld.addActionListener(e -> {
             try {
+                if (fechaFld.getDate() == null) throw new Exception("Debe seleccionar una fecha");
                 controller.cargar(
-                        fechaFld.getText(),
+                        FORMATO_ISO.format(fechaFld.getDate()),
                         (CategoriaRecurso) categoriaFld.getSelectedItem()
                 );
             } catch (Exception ex) {
