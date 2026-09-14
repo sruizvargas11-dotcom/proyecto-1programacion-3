@@ -1,0 +1,894 @@
+════════════════════════════════════════════════════
+REPORTE PREVIO — SISTEMA RESERVA DE RECURSOS EIF206
+Fecha: 2026-09-13
+════════════════════════════════════════════════════
+
+Este reporte es de solo lectura. No se modificó ningún archivo fuente.
+Se leyeron 51 archivos .java bajo src/main/java sin excepción.
+
+════════════════════════════════════════════════════
+1. ARCHIVOS ENCONTRADOS (51)
+════════════════════════════════════════════════════
+
+una.eif206.ApplicationLogin
+
+una.eif206.controller
+  ActividadesController, CalendarizacionController, CambiarClaveController,
+  CategoriasController, EstadisticasController, FuncionariosController,
+  LoginController, RecursosController, ReservasController
+
+una.eif206.data
+  Data, XMLHelper
+
+una.eif206.logic
+  Admin, CategoriaRecurso, Funcionario, Persona, Recurso, Reserva, Service, Usuario
+
+una.eif206.logic.enums
+  EstadoReserva, UsuarioRol
+
+una.eif206.model
+  ActividadesModel, CalendarizacionModel, CambiarClaveModel, CategoriasModel,
+  CategoriasTableModel, EstadisticasModel, FuncionariosModel, FuncionariosTableModel,
+  LoginModel, RecursosModel, RecursosTableModel, ReservasModel, ReservasTableModel
+
+una.eif206.util
+  AbstractModel, AbstractTableModel, Highlighter, IconLoader, PdfReporter,
+  ReservaExtraccion, ReservaExtractorService, Sesion
+
+una.eif206.view
+  ActividadesView, CalendarizacionView, CambiarClaveView, CategoriasView,
+  EstadisticasView, FuncionariosView, LoginView, RecursosView, ReservasView
+
+NOTA: No existe archivo "MenuPrincipalView.java" en el proyecto. El rol de
+pantalla principal / contenedor de tabs lo cumple una.eif206.ApplicationLogin
+(un JFrame), que además actúa como clase de arranque (contiene el main()).
+Ver sección 5.
+
+════════════════════════════════════════════════════
+2. ANÁLISIS POR ARCHIVO
+════════════════════════════════════════════════════
+
+── ARCHIVO: una.eif206.ApplicationLogin ──────────────────────────────
+Tipo: Main / View (bootstrap, JFrame contenedor de tabs)
+Hereda de: JFrame
+Implementa: ninguna
+
+Imports del proyecto:
+  - controller.* (los 9 controllers)
+  - logic.Service
+  - model.* (7 de los 10 models: Actividades, Calendarizacion, CambiarClave,
+             Categorias, Estadisticas, Funcionarios, Recursos, Reservas)
+  - util.Sesion
+  - view.* (las 9 views)
+
+Campos relevantes:
+  - JTabbedPane tabs
+  - static final Color BACKGROUND_ERROR (usado por casi todas las views para
+    marcar campos inválidos — acoplamiento visual global)
+
+Métodos públicos:
+  - ApplicationLogin() (constructor, arma los 7 MVC de tabs + botones)
+  - static void main(String[] args)
+
+Notas: Instancia TODOS los MVC triads (View+Model+Controller) de las 7
+pantallas con tab (Funcionarios, Categorias, Recursos, Reservas,
+Calendarizacion, Actividades, Estadisticas) incondicionalmente en el
+constructor, y luego decide cuáles tabs mostrar según el rol. Es decir, un
+FUNCIONARIO también instancia FuncionariosController/CategoriasController/
+RecursosController aunque nunca vea esos tabs. Los botones "Cambiar Clave" y
+"Cerrar Sesion" crean un CambiarClaveView/Model/Controller y un nuevo
+LoginView/Model/Controller respectivamente, de forma inline (ver flujos).
+
+── ARCHIVO: una.eif206.controller.ActividadesController ──────────────
+Tipo: Controller
+Hereda de: ninguna
+Implementa: ninguna
+Imports del proyecto: logic.Service, model.ActividadesModel, view.ActividadesView
+Campos relevantes: ActividadesView view; ActividadesModel model
+Métodos públicos:
+  - ActividadesController(ActividadesView view, ActividadesModel model)
+  - void cargarSemana(String fechaReferencia) throws Exception
+Service que usa: Service.instance().getActividadesSemana(fecha)
+Model que usa: ActividadesModel (setFechaReferencia, setMatriz)
+View que usa: ActividadesView
+Eventos que registra: ninguno directo (la View registra sus propios listeners
+  y llama a controller.cargarSemana())
+
+── ARCHIVO: una.eif206.controller.CalendarizacionController ──────────
+Tipo: Controller
+Hereda de: ninguna / Implementa: ninguna
+Imports del proyecto: logic.CategoriaRecurso, logic.Service,
+  model.CalendarizacionModel, view.CalendarizacionView
+Campos: CalendarizacionView view; CalendarizacionModel model
+Métodos públicos:
+  - CalendarizacionController(view, model)  [precarga categorías en el ctor]
+  - void cargar(String fecha, CategoriaRecurso categoria) throws Exception
+Service que usa: findAllCategorias() (en ctor), findRecursosByCategoria(),
+  getCalendario(fecha, categoria)
+Model que usa: CalendarizacionModel (setCategorias, setFecha, setCategoria,
+  setRecursos, setMatriz)
+View que usa: CalendarizacionView
+
+── ARCHIVO: una.eif206.controller.CambiarClaveController ─────────────
+Tipo: Controller
+Imports del proyecto: logic.Service, logic.Usuario, model.CambiarClaveModel,
+  util.Sesion (import presente, no se usa dentro de la clase), view.CambiarClaveView
+Campos: CambiarClaveView view; CambiarClaveModel model
+Métodos públicos:
+  - CambiarClaveController(view, model, Usuario usuario)
+  - void cambiarClave(String actual, String nueva) throws Exception
+Service que usa: Service.instance().cambiarClave(u, actual, nueva)
+Model que usa: CambiarClaveModel (setUsuario / getUsuario)
+View que usa: CambiarClaveView
+Notas: recibe el Usuario objetivo por parámetro del constructor en vez de vía
+  Sesion, lo cual es deliberado porque se usa tanto para el usuario logueado
+  (ApplicationLogin) como para un usuario recién autenticado desde LoginView
+  ("olvidé mi clave").
+
+── ARCHIVO: una.eif206.controller.CategoriasController ────────────────
+Tipo: Controller
+Imports del proyecto: logic.CategoriaRecurso, logic.Service,
+  model.CategoriasModel, view.CategoriasView
+Métodos públicos: CategoriasController(view, model), create, delete, update,
+  clear, edit(int row), search(String descripcion)
+Service que usa: createCategoria, findAllCategorias, deleteCategoria,
+  updateCategoria, searchCategorias
+Model que usa: CategoriasModel (CURRENT, LIST)
+View que usa: CategoriasView
+
+── ARCHIVO: una.eif206.controller.EstadisticasController ──────────────
+Tipo: Controller
+Imports del proyecto: logic.Service, model.EstadisticasModel, view.EstadisticasView
+Métodos públicos: EstadisticasController(view, model),
+  generar(String desde, String hasta) throws Exception
+Service que usa: getEstadisticasRecursos(desde,hasta), getEstadisticasActividades(desde,hasta)
+Model que usa: EstadisticasModel (DATOS_RECURSOS, DATOS_ACTIVIDADES)
+View que usa: EstadisticasView
+
+── ARCHIVO: una.eif206.controller.FuncionariosController ──────────────
+Tipo: Controller
+Imports del proyecto: logic.Funcionario, logic.Service, model.FuncionariosModel,
+  view.FuncionariosView
+Métodos públicos: FuncionariosController(view, model), create, delete, clear,
+  edit(int row), search(String nombre), update(Funcionario f)
+Service que usa: createFuncionario, findAllFuncionarios, deleteFuncionario,
+  searchFuncionarios, updateFuncionario
+Model que usa: FuncionariosModel (CURRENT, LIST)
+View que usa: FuncionariosView
+
+── ARCHIVO: una.eif206.controller.LoginController ─────────────────────
+Tipo: Controller
+Imports del proyecto: logic.Service, logic.Usuario, model.LoginModel,
+  util.Sesion, view.LoginView
+Métodos públicos: LoginController(view, model), login(String id, String clave)
+Service que usa: Service.instance().login(id, clave)
+Model que usa: LoginModel (no se actualiza realmente tras login exitoso; solo
+  se usa Sesion.setUsuario(u) y view.dispose())
+View que usa: LoginView
+
+── ARCHIVO: una.eif206.controller.RecursosController ───────────────────
+Tipo: Controller
+Imports del proyecto: logic.CategoriaRecurso, logic.Recurso, logic.Service,
+  model.RecursosModel, view.RecursosView
+Métodos públicos: RecursosController(view, model), create, delete, update,
+  clear, edit(int row), filtrarPorCategoria(CategoriaRecurso categoria)
+Service que usa: findAllCategorias, findAllRecursos, createRecurso,
+  deleteRecurso, updateRecurso, findRecursosByCategoria
+Model que usa: RecursosModel (CURRENT, LIST, CATEGORIAS)
+View que usa: RecursosView
+
+── ARCHIVO: una.eif206.controller.ReservasController ───────────────────
+Tipo: Controller
+Imports del proyecto: logic.CategoriaRecurso, logic.Funcionario, logic.Recurso,
+  logic.Reserva, logic.Service, logic.Usuario, logic.enums.EstadoReserva,
+  logic.enums.UsuarioRol, model.ReservasModel, util.ReservaExtraccion,
+  util.Sesion, view.ReservasView
+Campos: ReservasView view; ReservasModel model
+Métodos públicos:
+  - ReservasController(view, model)
+  - void cargarLista()
+  - Reserva create(String actividad, String fecha, String horaInicio,
+      String horaFin, List<CategoriaRecurso> categoriasSeleccionadas)
+  - void cancelar(Reserva r)
+  - void clear()
+  - ReservaExtraccion extraerConIA(String frase)
+  - void edit(int row)
+  - (privados) buscarRecursoDisponible(...), seSolapan(...)
+Service que usa: findAllCategorias, findAllReservas,
+  findReservasByFuncionario, generarIdReserva, createReserva,
+  cancelarReserva, extraerReserva, findAllRecursos
+Model que usa: ReservasModel (CURRENT, LIST, CATEGORIAS)
+View que usa: ReservasView
+Notas: este controller tiene MÁS lógica de negocio que los demás — decide
+  disponibilidad de recursos (buscarRecursoDisponible) y solapamiento de
+  horarios (seSolapan), duplicando lógica que YA existe en Service.java
+  (horariosSolapan, privado). Ver sección 3, riesgo adicional.
+  También usa Sesion.getUsuario() directamente para decidir el rol
+  (ADMIN ve todas las reservas, FUNCIONARIO solo las propias).
+
+── ARCHIVO: una.eif206.data.Data ───────────────────────────────────────
+Tipo: Data (POJO raíz JAXB, en-memoria + persistido a XML)
+Hereda de: ninguna / Implementa: ninguna
+Imports del proyecto: logic.* (Admin, CategoriaRecurso, Funcionario, Recurso, Reserva)
+Campos relevantes: List<Admin> admins; List<Funcionario> funcionarios;
+  List<CategoriaRecurso> categorias; List<Recurso> recursos;
+  List<Reserva> reservas; int categoriaCounter; int reservaCounter
+Métodos públicos: generarIdCategoria(), generarIdReserva(), getAdmins(),
+  getFuncionarios(), getCategorias(), getRecursos(), getReservas()
+Notas: el constructor siembra datos semilla (admin/admin123, 2 funcionarios,
+  3 categorías, 3 recursos) cada vez que no existe data.xml o falla su carga.
+
+── ARCHIVO: una.eif206.data.XMLHelper ──────────────────────────────────
+Tipo: Data / Util (helper de persistencia JAXB)
+Campos: String path; static XMLHelper theInstance (singleton)
+Métodos públicos: static XMLHelper instance(), XMLHelper(String p),
+  Data load() throws Exception, void store(Data d) throws Exception
+Notas: store() escribe primero a un archivo .tmp y luego hace
+  Files.move(..., REPLACE_EXISTING) — patrón seguro de escritura atómica.
+
+── ARCHIVO: una.eif206.logic.Admin ─────────────────────────────────────
+Tipo: Model(dominio)/POJO
+Hereda de: Usuario / Implementa: ninguna
+Campos relevantes: ninguno propio (hereda de Usuario/Persona)
+Métodos públicos: Admin(String id), Admin(String id, String clave), Admin()
+
+── ARCHIVO: una.eif206.logic.CategoriaRecurso ──────────────────────────
+Tipo: POJO (dominio, JAXB @XmlID)
+Campos: @XmlID String id; String descripcion
+Métodos públicos: getters/setters, toString()
+
+── ARCHIVO: una.eif206.logic.Funcionario ───────────────────────────────
+Tipo: POJO / Model(dominio)
+Hereda de: Usuario
+Campos: String departamento; String telefono
+Métodos públicos: constructor completo, constructor vacío, getters/setters,
+  toString()
+
+── ARCHIVO: una.eif206.logic.Persona ───────────────────────────────────
+Tipo: POJO abstracto (base de Usuario)
+Hereda de: ninguna (abstract class, package-private: "abstract class Persona")
+Campos: @XmlID protected String id; protected String nombre
+Métodos públicos: getId/getNombre/setId/setNombre
+
+── ARCHIVO: una.eif206.logic.Recurso ───────────────────────────────────
+Tipo: POJO (dominio, JAXB @XmlID/@XmlIDREF)
+Campos: String id; String descripcion; CategoriaRecurso categoria (XmlIDREF);
+  boolean disponible
+Métodos públicos: getters/setters, toString()
+
+── ARCHIVO: una.eif206.logic.Reserva ───────────────────────────────────
+Tipo: POJO (dominio, JAXB @XmlIDREF)
+Campos: id, actividad, fecha, horaInicio, horaFin, Funcionario funcionario
+  (XmlIDREF), List<Recurso> recursos (XmlIDREF), EstadoReserva estado
+Métodos públicos: constructor completo, constructor vacío, getters/setters
+
+── ARCHIVO: una.eif206.logic.Service ───────────────────────────────────
+Tipo: Service (fachada única, singleton)
+Hereda de: ninguna / Implementa: ninguna
+Imports del proyecto: data.Data, data.XMLHelper, logic.enums.EstadoReserva,
+  util.ReservaExtraccion, util.ReservaExtractorService
+Campos relevantes: static Service theInstance; Data data;
+  ReservaExtractorService reservaExtractorService (lazy, IA)
+Métodos públicos agrupados por entidad: ver sección 2b más abajo (idéntico
+  a la tabla de migración, sección 6)
+
+── ARCHIVO: una.eif206.logic.Usuario ───────────────────────────────────
+Tipo: POJO (dominio, JAXB @XmlSeeAlso Admin/Funcionario)
+Hereda de: Persona
+Campos: String clave; UsuarioRol rol
+Métodos públicos: constructores, getClave/setClave, getRol/setRol,
+  equals(Object) (por id), toString()
+
+── ARCHIVO: una.eif206.logic.enums.EstadoReserva ───────────────────────
+Tipo: Enum — ACTIVA, CANCELADA, COMPLETADA
+
+── ARCHIVO: una.eif206.logic.enums.UsuarioRol ──────────────────────────
+Tipo: Enum — ADMIN, FUNCIONARIO
+
+── ARCHIVO: una.eif206.model.ActividadesModel ──────────────────────────
+Tipo: Model (AbstractModel)
+Hereda de: AbstractModel
+Propiedades que dispara: FECHA_REFERENCIA, MATRIZ
+Qué datos maneja: String fechaReferencia; Map<String,Map<String,String>> matriz
+
+── ARCHIVO: una.eif206.model.CalendarizacionModel ──────────────────────
+Tipo: Model (AbstractModel)
+Hereda de: AbstractModel
+Propiedades que dispara: CATEGORIAS, MATRIZ (FECHA está declarada como
+  constante pero setFecha() NO dispara firePropertyChange — inconsistencia
+  menor, ver sección 3)
+Qué datos maneja: fecha, categoria (actual), List<CategoriaRecurso>
+  categorias, List<Recurso> recursos, String[][] matriz
+
+── ARCHIVO: una.eif206.model.CambiarClaveModel ─────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT
+Qué datos maneja: Usuario usuario
+
+── ARCHIVO: una.eif206.model.CategoriasModel ───────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT, LIST
+Qué datos maneja: CategoriaRecurso current; List<CategoriaRecurso> list
+
+── ARCHIVO: una.eif206.model.CategoriasTableModel ──────────────────────
+Tipo: Model(Swing) — TableModel adaptador para JTable
+Hereda de: AbstractTableModel<CategoriaRecurso>
+Campos: constantes de columna ID, DESCRIPCION
+Métodos públicos: constructor(cols,rows), initColNames(), getPropetyAt()
+
+── ARCHIVO: una.eif206.model.EstadisticasModel ─────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: DATOS_RECURSOS, DATOS_ACTIVIDADES
+Qué datos maneja: Map<String,Integer> datosRecursos; Map<String,Integer>
+  datosActividades
+
+── ARCHIVO: una.eif206.model.FuncionariosModel ─────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT, LIST
+Qué datos maneja: Funcionario current; List<Funcionario> list
+
+── ARCHIVO: una.eif206.model.FuncionariosTableModel ────────────────────
+Tipo: Model(Swing) — TableModel adaptador
+Hereda de: AbstractTableModel<Funcionario>
+Constantes de columna: ID, NOMBRE, TELEFONO
+
+── ARCHIVO: una.eif206.model.LoginModel ────────────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT
+Qué datos maneja: Usuario usuario (en la práctica no se usa tras login
+  exitoso; LoginController usa Sesion en su lugar)
+
+── ARCHIVO: una.eif206.model.RecursosModel ─────────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT, LIST, CATEGORIAS
+Qué datos maneja: Recurso current; List<Recurso> list;
+  List<CategoriaRecurso> categorias
+
+── ARCHIVO: una.eif206.model.RecursosTableModel ────────────────────────
+Tipo: Model(Swing) — TableModel adaptador
+Hereda de: AbstractTableModel<Recurso>
+Constantes de columna: ID, DESCRIPCION, CATEGORIA
+
+── ARCHIVO: una.eif206.model.ReservasModel ─────────────────────────────
+Tipo: Model (AbstractModel)
+Propiedades que dispara: CURRENT, LIST, CATEGORIAS
+Qué datos maneja: Reserva current; List<Reserva> list;
+  List<CategoriaRecurso> categorias
+
+── ARCHIVO: una.eif206.model.ReservasTableModel ────────────────────────
+Tipo: Model(Swing) — TableModel adaptador
+Hereda de: AbstractTableModel<Reserva>
+Constantes de columna: ID, ACTIVIDAD, FECHA, HORA_INICIO, HORA_FIN, ESTADO
+
+── ARCHIVO: una.eif206.util.AbstractModel ──────────────────────────────
+Tipo: Util (clase base abstracta para Models con PropertyChangeSupport)
+Métodos públicos: addPropertyChangeListener, removePropertyChangeListener
+Métodos protegidos: firePropertyChange(String propertyName)
+
+── ARCHIVO: una.eif206.util.AbstractTableModel ─────────────────────────
+Tipo: Util (clase base abstracta genérica para TableModels de Swing)
+Hereda de: javax.swing.table.AbstractTableModel
+Implementa: javax.swing.table.TableModel
+Métodos públicos: getColumnCount, getColumnName, getColumnClass,
+  getRowCount, getValueAt, getRowAt
+Métodos abstractos: getPropetyAt(E,int), initColNames()
+
+── ARCHIVO: una.eif206.util.Highlighter ────────────────────────────────
+Tipo: Util (MouseAdapter para resaltar campos on-hover)
+Hereda de: MouseAdapter / Implementa: MouseListener
+
+── ARCHIVO: una.eif206.util.IconLoader ─────────────────────────────────
+Tipo: Util (carga de íconos desde /icons/*.png, escalados a 18x18)
+Métodos públicos: static ImageIcon load(String nombre)
+
+── ARCHIVO: una.eif206.util.PdfReporter ────────────────────────────────
+Tipo: Util (generación de reportes PDF con iText)
+Métodos públicos: static imprimir(Component,String,String[],List<String[]>),
+  static generar(...), static imprimirMultiple(Component,String,
+  List<Seccion>), static generarMultiple(...),
+  static imprimirDesdeTabla(Component,String,JTable)
+Clase interna: Seccion (subtitulo, columnas, filas)
+Notas: usa JFileChooser para elegir destino; NO abre el PDF generado
+  automáticamente tras crearlo.
+
+── ARCHIVO: una.eif206.util.ReservaExtraccion ──────────────────────────
+Tipo: POJO (DTO de salida de la extracción por IA)
+Campos: actividad, fecha, horaInicio, horaFinal, List<String> categoriasRecurso
+
+── ARCHIVO: una.eif206.util.ReservaExtractorService ────────────────────
+Tipo: Util (interfaz langchain4j AiServices)
+Implementa: ninguna explícita (interfaz consumida por AiServices.create)
+Métodos públicos: ReservaExtraccion extraer(String frase, String categorias,
+  String hoy) — anotada con @SystemMessage/@UserMessage (prompt IA)
+
+── ARCHIVO: una.eif206.util.Sesion ─────────────────────────────────────
+Tipo: Util (holder estático de sesión global)
+Campos: static Usuario usuario
+Métodos públicos: static getUsuario(), setUsuario(Usuario), isLoggedIn(),
+  logout()
+
+── ARCHIVO: una.eif206.view.ActividadesView ────────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JPanel, JDateChooser (com.toedter.calendar), JButton x2,
+  JTable, DefaultTableModel (tabla construida manualmente, NO usa un
+  *TableModel del paquete model)
+Métodos que expone al controller: getPanel(), setController(), setModel()
+¿Llama directamente a Service?: sí, parcialmente — importa
+  una.eif206.logic.Service SOLO para leer la constante estática
+  Service.NOMBRES_DIAS (String[]); no invoca instance() ni métodos de
+  negocio. Acoplamiento débil pero real a la capa logic.
+¿Tiene propertyChange?: sí (ActividadesModel.MATRIZ → pintarMatriz())
+
+── ARCHIVO: una.eif206.view.CalendarizacionView ────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JDateChooser, JComboBox<CategoriaRecurso>, JButton x2,
+  JTable, DefaultTableModel dinámico (actualizarTabla())
+Métodos que expone: getPanel(), setController(), setModel()
+¿Llama directamente a Service?: no
+¿Tiene propertyChange?: sí (CATEGORIAS, MATRIZ)
+
+── ARCHIVO: una.eif206.view.CambiarClaveView ───────────────────────────
+Tipo: View (JDialog modal)
+Hereda de: JDialog / Implementa: PropertyChangeListener
+Componentes Swing: 3x JPasswordField, JButton OK/Cancelar
+Métodos que expone: setController(), setModel()
+¿Llama directamente a Service?: no
+¿Tiene propertyChange?: sí (vacío — no reacciona a nada del modelo)
+
+── ARCHIVO: una.eif206.view.CategoriasView ─────────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JTextField x3, JButton x6 (guardar, modificar, cancelar,
+  buscar, borrar, imprimir), JTable
+Métodos que expone: getPanel(), setController(), setModel(), take(),
+  validate() (privado)
+¿Llama directamente a Service?: no (usa controller.create/update/delete/search)
+¿Tiene propertyChange?: sí (CategoriasModel.LIST → reconstruye
+  CategoriasTableModel; CURRENT → rellena campos del formulario)
+
+── ARCHIVO: una.eif206.view.EstadisticasView ───────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: 2x JDateChooser, JButton x2, 2x ChartPanel (JFreeChart
+  bar charts)
+Métodos que expone: getPanel(), setController(), setModel()
+¿Llama directamente a Service?: no
+¿Tiene propertyChange?: sí (DATOS_RECURSOS, DATOS_ACTIVIDADES → actualiza
+  dataset de cada gráfico)
+
+── ARCHIVO: una.eif206.view.FuncionariosView ───────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JTextField x4, JButton x6, JTable
+Métodos que expone: getPanel(), setController(), setModel(), take(),
+  validate() (privado)
+¿Llama directamente a Service?: no
+¿Tiene propertyChange?: sí (LIST, CURRENT)
+
+── ARCHIVO: una.eif206.view.LoginView ──────────────────────────────────
+Tipo: View (JDialog modal)
+Hereda de: JDialog / Implementa: PropertyChangeListener
+Componentes Swing: JTextField id, JPasswordField clave, JButton
+  ingresar/cambiar
+Métodos que expone: setController(), setModel()
+¿Llama directamente a Service?: SÍ — VIOLACIÓN MVC. El botón "Cambiar clave"
+  (cambiarFld) llama Service.instance().login(id, clave) directamente para
+  autenticar antes de abrir CambiarClaveView, sin pasar por LoginController.
+  Además, esa misma acción instancia CambiarClaveView/Model/Controller
+  directamente desde la View (una View creando un Controller).
+¿Tiene propertyChange?: sí (vacío — no reacciona a nada del modelo)
+
+── ARCHIVO: una.eif206.view.RecursosView ───────────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JTextField x2, JComboBox<CategoriaRecurso> x2 (categoría
+  y filtro), JButton x5, JTable
+Métodos que expone: getPanel(), setController(), setModel(), take(),
+  validate() (privado)
+¿Llama directamente a Service?: no
+¿Tiene propertyChange?: sí (LIST, CATEGORIAS, CURRENT)
+
+── ARCHIVO: una.eif206.view.ReservasView ───────────────────────────────
+Tipo: View
+Implementa: PropertyChangeListener
+Componentes Swing: JTextField x3, JDateChooser, JList<CategoriaRecurso>
+  (multi-selección), JButton x5 (crear, cancelar, limpiar, imprimir,
+  extraer IA), JTable
+Métodos que expone: getPanel(), setController(), setModel(), validate(),
+  checkField(), checkHoraField(), limpiarFormulario() (privados)
+¿Llama directamente a Service?: no (usa controller.create/cancelar/clear/
+  extraerConIA/edit)
+¿Tiene propertyChange?: sí (LIST, CATEGORIAS, CURRENT)
+
+════════════════════════════════════════════════════
+3. RIESGOS IDENTIFICADOS
+════════════════════════════════════════════════════
+
+ACOPLAMIENTO DIRECTO A SERVICE.INSTANCE() FUERA DE UN CONTROLLER:
+  - una.eif206.view.LoginView.java:57
+      una.eif206.logic.Usuario u = Service.instance().login(
+              idFld.getText(), new String(claveFld.getPassword()));
+    (dentro del ActionListener de "cambiarFld", botón "Cambiar clave")
+  - una.eif206.ApplicationLogin.java:57
+      Service.instance().stop();
+    (dentro de windowClosing() del WindowAdapter — aceptable como hook de
+    ciclo de vida de aplicación, pero ApplicationLogin no es un Controller)
+
+  No se encontraron más usos de Service.instance() fuera de los 9
+  controllers y de estos dos puntos.
+
+ACOPLAMIENTO DIRECTO A *MODEL (Controller → Model, esperado por diseño MVC):
+  - ActividadesController        → ActividadesModel        (FECHA_REFERENCIA, MATRIZ)
+  - CalendarizacionController    → CalendarizacionModel     (CATEGORIAS, MATRIZ; FECHA no dispara evento)
+  - CambiarClaveController       → CambiarClaveModel        (CURRENT)
+  - CategoriasController         → CategoriasModel          (CURRENT, LIST)
+  - EstadisticasController       → EstadisticasModel        (DATOS_RECURSOS, DATOS_ACTIVIDADES)
+  - FuncionariosController       → FuncionariosModel        (CURRENT, LIST)
+  - LoginController              → LoginModel               (CURRENT — declarado pero no usado tras login)
+  - RecursosController           → RecursosModel            (CURRENT, LIST, CATEGORIAS)
+  - ReservasController           → ReservasModel            (CURRENT, LIST, CATEGORIAS)
+  Todos siguen el mismo patrón: Controller decide, Model almacena y dispara
+  firePropertyChange, View escucha. No hay controller que use un *Model que
+  no sea el suyo propio.
+
+VISTAS QUE LLAMAN SERVICES DIRECTAMENTE (violación MVC):
+  - LoginView: import una.eif206.logic.Service y llamada directa a
+    Service.instance().login(...) — violación real y funcional (bypassa
+    LoginController y Sesion no queda actualizada por ese camino, ya que
+    solo se usa el resultado localmente para abrir CambiarClaveView).
+  - ActividadesView: import una.eif206.logic.Service SOLO para leer la
+    constante estática Service.NOMBRES_DIAS. No es una llamada a instance()
+    ni a lógica de negocio, pero sigue siendo un acoplamiento de la capa
+    view a la capa logic que conviene romper (mover el arreglo de nombres
+    de días a util o a ActividadesModel).
+  - El resto de las 9 views (CalendarizacionView, CambiarClaveView,
+    CategoriasView, EstadisticasView, FuncionariosView, RecursosView,
+    ReservasView) NO importan ni llaman Service — cumplen MVC correctamente.
+
+DEPENDENCIAS ENTRE CONTROLLERS:
+  - Ningún Controller instancia a otro Controller directamente.
+  - Sí existen instanciaciones de Controller (con su View+Model) hechas
+    DESDE clases que no son Controllers:
+      1) ApplicationLogin (clase main/bootstrap) instancia los 9 triads
+         MVC completos, incluyendo, dentro de los ActionListener de sus
+         propios botones, un CambiarClaveView+CambiarClaveModel+
+         CambiarClaveController y (al cerrar sesión) un nuevo
+         LoginView+LoginModel+LoginController.
+      2) LoginView (una View) instancia CambiarClaveView+CambiarClaveModel+
+         CambiarClaveController directamente en su ActionListener
+         "cambiarFld" — una View creando un Controller, violación adicional
+         de límites de capas.
+  - Cómo se abren las pantallas: no hay un método central "abrirPantalla()";
+    cada tab se agrega directamente como panel (view.getPanel()) al
+    JTabbedPane en el constructor de ApplicationLogin, y los diálogos
+    (CambiarClaveView, LoginView) se abren con `new XxxView(); ...;
+    setVisible(true)` inline en los ActionListener correspondientes.
+
+RIESGO ADICIONAL — LÓGICA DE NEGOCIO DUPLICADA:
+  El cálculo de solapamiento de horarios está implementado DOS VECES de
+  forma casi idéntica:
+    - Service.java (privado) horariosSolapan(inicioA,finA,inicioB,finB)
+    - ReservasController.java (privado) seSolapan(inicioA,finA,inicioB,finB)
+  Ambos parsean "H:mm" con DateTimeFormatter y comparan con isBefore(). Al
+  migrar a servicios especializados, esta lógica debe quedar en un solo
+  lugar (ReservaService) y ReservasController debe consumirla en vez de
+  reimplementarla — hoy ReservasController.buscarRecursoDisponible() decide
+  disponibilidad de recursos iterando reservas manualmente en el propio
+  Controller, duplicando responsabilidad que Service.createReserva() ya
+  valida internamente al crear la reserva.
+
+RIESGO MENOR — MODELO CalendarizacionModel:
+  setFecha(String f) asigna el campo pero NO llama firePropertyChange(FECHA)
+  (no existe constante FECHA declarada como notificada), a diferencia del
+  resto de setters del mismo Model. Inconsistencia menor, sin efecto
+  visible hoy porque CalendarizacionView no escucha esa propiedad.
+
+RIESGO MENOR — LoginModel prácticamente sin uso:
+  LoginController.login() no actualiza LoginModel; solo usa
+  Sesion.setUsuario(u) y view.dispose(). LoginModel.CURRENT nunca se dispara
+  desde el flujo real de login.
+
+════════════════════════════════════════════════════
+4. MAPA DE DEPENDENCIAS POR MÓDULO
+════════════════════════════════════════════════════
+
+MÓDULO: Login
+View:        LoginView (JDialog modal)
+Controller:  LoginController
+Model:       LoginModel (propiedad: CURRENT — declarada pero sin uso real)
+Service:     Service.instance().login(id, clave)
+Conexión:    Controller → Service → Sesion.setUsuario() → view.dispose()
+             (no pasa por Model de forma efectiva)
+Violación:   LoginView también llama Service.instance().login() directamente
+             en su botón "Cambiar clave", y crea un CambiarClaveController
+             ella misma.
+
+MÓDULO: Funcionarios
+View:        FuncionariosView
+Controller:  FuncionariosController
+Model:       FuncionariosModel (propiedades: CURRENT, LIST)
+Service:     Service.instance().createFuncionario() / findAllFuncionarios() /
+             searchFuncionarios() / deleteFuncionario() / updateFuncionario()
+Conexión:    Controller → Model → View (PropertyChange)
+
+MÓDULO: Categorías
+View:        CategoriasView
+Controller:  CategoriasController
+Model:       CategoriasModel (propiedades: CURRENT, LIST)
+Service:     Service.instance().createCategoria() / findAllCategorias() /
+             searchCategorias() / deleteCategoria() / updateCategoria()
+Conexión:    Controller → Model → View (PropertyChange)
+
+MÓDULO: Recursos
+View:        RecursosView
+Controller:  RecursosController
+Model:       RecursosModel (propiedades: CURRENT, LIST, CATEGORIAS)
+Service:     Service.instance().createRecurso() / findAllRecursos() /
+             deleteRecurso() / updateRecurso() / findRecursosByCategoria() /
+             findAllCategorias()
+Conexión:    Controller → Model → View (PropertyChange)
+
+MÓDULO: Reservas
+View:        ReservasView
+Controller:  ReservasController
+Model:       ReservasModel (propiedades: CURRENT, LIST, CATEGORIAS)
+Service:     Service.instance().createReserva() / findAllReservas() /
+             findReservasByFuncionario() / generarIdReserva() /
+             cancelarReserva() / extraerReserva() / findAllRecursos() /
+             findAllCategorias()
+Conexión:    Controller → Model → View (PropertyChange)
+Extra:       Controller usa util.Sesion.getUsuario() para decidir rol y
+             lógica propia de disponibilidad (buscarRecursoDisponible,
+             seSolapan) — ver riesgo de duplicación en sección 3.
+
+MÓDULO: Estadísticas
+View:        EstadisticasView
+Controller:  EstadisticasController
+Model:       EstadisticasModel (propiedades: DATOS_RECURSOS, DATOS_ACTIVIDADES)
+Service:     Service.instance().getEstadisticasRecursos(desde,hasta) /
+             getEstadisticasActividades(desde,hasta)
+Conexión:    Controller → Model → View (PropertyChange) → View convierte
+             Map<String,Integer> a DefaultCategoryDataset y actualiza los
+             JFreeChart ChartPanel
+
+MÓDULO: Actividades
+View:        ActividadesView
+Controller:  ActividadesController
+Model:       ActividadesModel (propiedades: FECHA_REFERENCIA, MATRIZ)
+Service:     Service.instance().getActividadesSemana(fechaReferencia)
+Conexión:    Controller → Model → View (PropertyChange)
+Extra:       View importa Service SOLO por la constante NOMBRES_DIAS
+             (acoplamiento débil, ver riesgos).
+
+MÓDULO: Calendarización
+View:        CalendarizacionView
+Controller:  CalendarizacionController
+Model:       CalendarizacionModel (propiedades: CATEGORIAS, MATRIZ; FECHA
+             sin notificación)
+Service:     Service.instance().findAllCategorias() (en ctor) /
+             findRecursosByCategoria() / getCalendario(fecha, categoria)
+Conexión:    Controller → Model → View (PropertyChange)
+
+MÓDULO: CambiarClave
+View:        CambiarClaveView (JDialog modal, se instancia ad-hoc desde
+             ApplicationLogin y desde LoginView)
+Controller:  CambiarClaveController (recibe el Usuario objetivo por
+             constructor, no vía Sesion)
+Model:       CambiarClaveModel (propiedad: CURRENT)
+Service:     Service.instance().cambiarClave(usuario, actual, nueva)
+Conexión:    Controller → Model → View (PropertyChange, aunque el
+             propertyChange de la View está vacío)
+
+════════════════════════════════════════════════════
+5. ApplicationLogin (equivalente a MenuPrincipalView) — ANÁLISIS CRÍTICO
+════════════════════════════════════════════════════
+
+No existe una clase MenuPrincipalView; ApplicationLogin (extends JFrame)
+cumple ese rol además de ser la clase de arranque (contiene public static
+void main()).
+
+¿Cómo se abre cada pantalla?
+  Las 7 pantallas con tab (Funcionarios, Categorias, Recursos, Reservas,
+  Calendarizacion, Actividades, Estadisticas) NO se "abren": se construyen
+  todas de una vez en el constructor de ApplicationLogin
+  (new XxxView(); new XxxModel(); new XxxController(view, model);) y su
+  view.getPanel() se agrega al JTabbedPane según el rol. No hay lazy
+  loading — las 7 se instancian siempre, aunque el rol solo vaya a mostrar
+  un subconjunto.
+  Las pantallas modales (CambiarClaveView, LoginView) sí se abren bajo
+  demanda con `new` + `setVisible(true)` dentro de ActionListeners.
+
+¿Recibe services por constructor o los instancia adentro?
+  Ninguno de los dos exactamente: ApplicationLogin no recibe ni instancia
+  Service directamente para las pantallas de tab (eso lo hacen los
+  Controllers vía Service.instance(), un singleton estático global). El
+  único uso directo de Service en ApplicationLogin es
+  Service.instance().stop() al cerrar la ventana (persistir a XML).
+
+¿Cómo diferencia tabs de admin vs funcionario?
+  switch (Sesion.getUsuario().getRol()) { case ADMIN: ...; case FUNCIONARIO: ...; }
+  ADMIN ve: Funcionarios, Categorias, Recursos, Calendarizacion,
+            Actividades, Estadisticas (6 tabs)
+  FUNCIONARIO ve: Reservas, Calendarizacion, Actividades, Estadisticas (4 tabs)
+  Nótese que FuncionariosView/CategoriasView/RecursosView/ReservasView se
+  instancian TODAS igual sin importar el rol, aunque solo se muestre el
+  subconjunto correspondiente vía tabs.addTab(...).
+
+Lista cada botón/tab y qué controller abre:
+  Tab "Funcionarios"     → FuncionariosController   (solo ADMIN)
+  Tab "Categorias"       → CategoriasController      (solo ADMIN)
+  Tab "Recursos"         → RecursosController        (solo ADMIN)
+  Tab "Reservas"         → ReservasController        (solo FUNCIONARIO)
+  Tab "Calendarizacion"  → CalendarizacionController (ambos roles)
+  Tab "Actividades"      → ActividadesController     (ambos roles)
+  Tab "Estadisticas"     → EstadisticasController    (ambos roles)
+  Botón "Cambiar Clave"  → crea CambiarClaveController inline (ambos roles)
+  Botón "Cerrar Sesion"  → Sesion.logout() + dispose() + doLogin() (que crea
+                           LoginController) + si login exitoso, nueva
+                           ApplicationLogin()
+
+FLUJOS COMPLEJOS — paso a paso:
+
+1. Login → cómo llega al JTabbedPane principal:
+   main() → SwingUtilities.invokeLater → UIManager Nimbus (try/catch mudo)
+   → doLogin() [crea LoginView + LoginModel + LoginController, setVisible(true),
+   modal por lo que BLOQUEA hasta dispose()] → usuario llena
+   idFld/claveFld → click "Ingresar" → LoginController.login(id,clave) →
+   Service.instance().login(id,clave) [recorre admins y funcionarios buscando
+   id+clave] → si OK: Sesion.setUsuario(u); view.dispose() (cierra el modal
+   y desbloquea main) → si falla: excepción capturada en la View, pone fondo
+   rojo en campos y muestra JOptionPane de error (el diálogo sigue abierto).
+   → de vuelta en main(): if (Sesion.isLoggedIn()) new ApplicationLogin()
+   .setVisible(true) — construye todos los MVC y tabs según rol.
+
+2. Reserva con IA → desde el botón hasta precargar el formulario:
+   ReservasView: usuario escribe una frase libre en fraseFld → click
+   "Extraer AI" (extraerIAFld) → valida que no esté vacía →
+   controller.extraerConIA(frase) → ReservasController.extraerConIA() →
+   Service.instance().extraerReserva(frase) → Service, de forma lazy
+   (primera vez), construye reservaExtractorService: intenta
+   OpenAiChatModel apuntando a Groq (baseUrl api.groq.com/openai/v1,
+   modelo "openai/gpt-oss-20b", API key leída de config.properties vía
+   cargarApiKey()); si falla la construcción (p.ej. falta config.properties
+   o la key), cae en un fallback silencioso a un proxy demo gratuito de
+   langchain4j (baseUrl langchain4j.dev/demo/openai/v1, apiKey "demo",
+   modelo "gpt-4o-mini") → construye el prompt con la lista de categorías
+   existentes (data.getCategorias()) y la fecha de hoy → invoca
+   reservaExtractorService.extraer(frase, categorias, hoy) [interfaz
+   anotada con @SystemMessage/@UserMessage de langchain4j AiServices] →
+   devuelve un ReservaExtraccion (actividad, fecha, horaInicio, horaFinal,
+   categoriasRecurso) → de vuelta en ReservasView: si cada campo no es
+   null, se precarga actividadFld, fechaFld (parseado con SimpleDateFormat
+   ISO; si falla el parseo se ignora silenciosamente), horaInicioFld,
+   horaFinFld. NOTA: categoriasRecurso del DTO NO se usa para preseleccionar
+   nada en categoriasList (la lista de categorías a reservar debe elegirse
+   manualmente igual).
+
+3. Estadísticas → cómo se construye el gráfico:
+   EstadisticasView: usuario elige "Desde"/"Hasta" (JDateChooser) → click
+   "Generar" → validate() verifica que ambas fechas existan →
+   controller.generar(desde,hasta) [fechas formateadas ISO] →
+   EstadisticasController.generar() → Service.instance()
+   .getEstadisticasRecursos(desde,hasta) [recorre todas las reservas no
+   canceladas dentro del rango, cuenta por descripción de cada Recurso
+   usado] y getEstadisticasActividades(desde,hasta) [mismo filtro, cuenta
+   por Reserva.getActividad()] → ambos resultados (Map<String,Integer>) se
+   asignan al EstadisticasModel, disparando DATOS_RECURSOS y
+   DATOS_ACTIVIDADES → EstadisticasView.propertyChange() convierte cada Map
+   a un DefaultCategoryDataset (toDataset) y lo asigna con
+   panelRecursos.getChart().getCategoryPlot().setDataset(...) /
+   panelActividades... → JFreeChart repinta el ChartPanel automáticamente.
+
+4. PDF → cómo se genera y abre:
+   Cada View con botón "Imprimir PDF" arma sus propios datos (columnas +
+   filas) a partir de model.getList()/getDatos...() y llama a
+   PdfReporter.imprimir(panel, titulo, columnas, filas) — o, en
+   Calendarizacion/Actividades/Reservas, a
+   PdfReporter.imprimirDesdeTabla(panel, titulo, tabla) que lee
+   directamente el JTable visible (genérico, sin dependencia del Model) —
+   o, en Estadisticas, a PdfReporter.imprimirMultiple(panel, titulo,
+   List<Seccion>) para combinar 2 tablas (Recursos + Actividades) en un
+   mismo PDF. PdfReporter abre un JFileChooser para que el usuario elija
+   ruta y nombre; si cancela, no hace nada. Si confirma, arma el documento
+   con iText (Document/PdfWriter/PdfPTable/PdfPCell), escribe el archivo
+   con FileOutputStream, cierra el Document y muestra un JOptionPane de
+   éxito con la ruta generada (o de error si algo falla). El PDF generado
+   NO se abre automáticamente (no hay llamada a Desktop.open ni similar);
+   el usuario debe abrirlo manualmente desde el explorador de archivos.
+
+════════════════════════════════════════════════════
+6. TABLA DE MIGRACIÓN SERVICE.JAVA
+════════════════════════════════════════════════════
+
+  Método actual              → Service destino
+  ─────────────────────────────────────────────
+  login()                    → UsuarioService
+  cambiarClave()             → UsuarioService
+  createFuncionario()        → FuncionarioService
+  findAllFuncionarios()      → FuncionarioService
+  searchFuncionarios()       → FuncionarioService
+  deleteFuncionario()        → FuncionarioService
+  updateFuncionario()        → FuncionarioService
+  findFuncionarioById()      → FuncionarioService
+  createCategoria()          → CategoriaService
+  findAllCategorias()        → CategoriaService
+  searchCategorias()         → CategoriaService
+  deleteCategoria()          → CategoriaService
+  updateCategoria()          → CategoriaService
+  createRecurso()            → RecursoService
+  findAllRecursos()          → RecursoService
+  deleteRecurso()            → RecursoService
+  updateRecurso()            → RecursoService
+  findRecursosByCategoria()  → RecursoService
+  createReserva()            → ReservaService
+  findAllReservas()          → ReservaService
+  findReservasByFuncionario()→ ReservaService
+  generarIdReserva()         → ReservaService
+  cancelarReserva()          → ReservaService
+  horariosSolapan()          → ReservaService
+  getEstadisticasRecursos()  → EstadisticasService
+  getEstadisticasActividades()→ EstadisticasService
+  getActividadesSemana()     → ActividadesService
+  getCalendario()            → CalendarioService
+  extraerReserva()           → ReservaIAService
+  cargarApiKey()             → ReservaIAService
+
+  NOTA — métodos de Service.java NO listados en la tabla original, que
+  necesitan un destino cuando se elimine la fachada única:
+  - instance() / stop()   → probablemente quedan en un Service "orquestador"
+    o pasan a una capa de infraestructura (DataStoreService) responsable
+    del ciclo de vida de la carga/persistencia XML (XMLHelper), ya que
+    ningún *Service específico de entidad debería encargarse de
+    guardar/cargar TODO el árbol de datos.
+  - horaEnRango() (privado, usado solo por getCalendario) → viaja junto con
+    getCalendario() a CalendarioService.
+  - El constructor privado Service() que hace
+    data = XMLHelper.instance().load() → mismo destino que instance()/stop().
+
+  NOTA — cada Service de entidad destino necesitará seguir compartiendo la
+  misma instancia de Data (o repositorio equivalente) para no romper las
+  relaciones @XmlIDREF entre Recurso↔CategoriaRecurso y Reserva↔Funcionario/
+  Recurso; probablemente se requiera una inyección de un "Data" o
+  "DataStoreService" común a todos los *Service nuevos.
+
+════════════════════════════════════════════════════
+7. CONFIRMACIÓN FINAL
+════════════════════════════════════════════════════
+
+  ✓ Leí 51 archivos .java (100% de src/main/java), sin modificar ninguno.
+  ✓ Identifiqué 3 violaciones MVC concretas:
+      1) LoginView llama Service.instance().login() directamente (bypassa
+         LoginController).
+      2) LoginView instancia CambiarClaveController directamente (una View
+         creando un Controller).
+      3) ActividadesView importa Service solo por la constante NOMBRES_DIAS
+         (acoplamiento view→logic evitable).
+    Además, ApplicationLogin (bootstrap/main, no un Controller) usa
+    Service.instance().stop() para persistir al cerrar — aceptable como
+    hook de ciclo de vida de aplicación, pero a tener en cuenta al definir
+    dónde queda ese comportamiento tras la migración.
+  ✓ El flujo de la pantalla principal (ApplicationLogin, que hace de
+    MenuPrincipalView) es: construir en el constructor los 7 MVC de tabs
+    SIEMPRE (sin lazy-loading ni distinción de rol al instanciar, solo al
+    mostrar tabs), y abrir CambiarClaveView/LoginView bajo demanda de forma
+    inline en ActionListeners, sin un método centralizado de navegación.
+  ✓ Los riesgos principales son:
+      1) Lógica de negocio duplicada entre Service.horariosSolapan()
+         (privado) y ReservasController.seSolapan()/
+         buscarRecursoDisponible() — riesgo de que ambas copias diverjan al
+         migrar a ReservaService.
+      2) Acoplamiento de LoginView a Service.instance() y a
+         CambiarClaveController, que rompe el patrón MVC que sí siguen las
+         otras 8 views.
+      3) Instanciación incondicional de los 7 MVC de tabs en
+         ApplicationLogin sin importar el rol del usuario, generando
+         trabajo y llamadas a Service innecesarias (p.ej. un FUNCIONARIO
+         igual dispara findAllFuncionarios(), findAllCategorias() x2,
+         findAllRecursos() al arrancar la sesión).
+  ✓ Listo para reestructura cuando el usuario confirme.
+
+═══════════════════════════════════════════════════════════════
+*** FIN DEL REPORTE — NO SE REALIZÓ NINGÚN CAMBIO EN EL CÓDIGO ***
+═══════════════════════════════════════════════════════════════
