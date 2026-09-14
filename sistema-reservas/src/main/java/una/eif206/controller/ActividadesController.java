@@ -1,23 +1,24 @@
 package una.eif206.controller;
 
-import una.eif206.logic.Service;
-import una.eif206.model.ActividadesModel;
+import una.eif206.service.ActividadesService;
 import una.eif206.view.ActividadesView;
 
 public class ActividadesController {
 
-    ActividadesView view;
-    ActividadesModel model;
+    private final ActividadesView vista;
+    private final ActividadesService actividadesService;
 
-    public ActividadesController(ActividadesView view, ActividadesModel model) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
+    public ActividadesController(ActividadesView vista, ActividadesService actividadesService) {
+        this.vista = vista;
+        this.actividadesService = actividadesService;
+        vista.setController(this);
     }
 
-    public void cargarSemana(String fechaReferencia) throws Exception {
-        model.setFechaReferencia(fechaReferencia);
-        model.setMatriz(Service.instance().getActividadesSemana(fechaReferencia));
+    public void cargarSemana(String fechaReferencia) {
+        try {
+            vista.pintarMatriz(actividadesService.getActividadesSemana(fechaReferencia));
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 }

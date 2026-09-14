@@ -1,118 +1,149 @@
 package una.eif206.controller;
 
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Funcionario;
-import una.eif206.logic.Recurso;
-import una.eif206.logic.Reserva;
-import una.eif206.logic.Service;
-import una.eif206.logic.Usuario;
-import una.eif206.logic.enums.EstadoReserva;
-import una.eif206.logic.enums.UsuarioRol;
-import una.eif206.model.ReservasModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Funcionario;
+import una.eif206.model.Recurso;
+import una.eif206.model.Reserva;
+import una.eif206.model.Usuario;
+import una.eif206.model.enums.EstadoReserva;
+import una.eif206.model.enums.UsuarioRol;
+import una.eif206.service.CategoriaService;
+import una.eif206.service.ReservaIAService;
+import una.eif206.service.ReservaService;
 import una.eif206.util.ReservaExtraccion;
 import una.eif206.util.Sesion;
 import una.eif206.view.ReservasView;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReservasController {
 
-    ReservasView view;
-    ReservasModel model;
+    private final ReservasView vista;
+    private final ReservaService reservaService;
+    private final CategoriaService categoriaService;
+    private final ReservaIAService reservaIAService;
+    private List<Reserva> listaActual = new ArrayList<>();
+    private Reserva current;
 
-    public ReservasController(ReservasView view, ReservasModel model) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
-        model.setCategorias(Service.instance().findAllCategorias());
+    public ReservasController(ReservasView vista, ReservaService reservaService,
+                               CategoriaService categoriaService, ReservaIAService reservaIAService) {
+        this.vista = vista;
+        this.reservaService = reservaService;
+        this.categoriaService = categoriaService;
+        this.reservaIAService = reservaIAService;
+        vista.setController(this);
+        vista.cargarCategorias(categoriaService.findAll());
         cargarLista();
     }
 
     public void cargarLista() {
         Usuario usuario = Sesion.getUsuario();
         if (usuario.getRol() == UsuarioRol.ADMIN) {
-            model.setList(Service.instance().findAllReservas());
+            listaActual = reservaService.findAll();
         } else {
-            model.setList(Service.instance().findReservasByFuncionario((Funcionario) usuario));
+            listaActual = reservaService.findByFuncionario((Funcionario) usuario);
         }
+        vista.cargarTabla(listaActual);
     }
 
-    public Reserva create(String actividad, String fecha, String horaInicio,
-                          String horaFin, List<CategoriaRecurso> categoriasSeleccionadas) throws Exception {
-        if (!(Sesion.getUsuario() instanceof Funcionario)) {
-            throw new Exception("Solo un funcionario puede crear reservas");
-        }
-        Funcionario funcionario = (Funcionario) Sesion.getUsuario();
-
-        List<Recurso> recursos = new ArrayList<>();
-        for (CategoriaRecurso categoria : categoriasSeleccionadas) {
-            Recurso disponible = buscarRecursoDisponible(categoria, fecha, horaInicio, horaFin);
-            if (disponible == null) {
-                throw new Exception(
-                        "No hay recurso disponible de la categoria: " + categoria.getDescripcion());
+    public void create(String actividad, String fecha, String horaInicio,
+                        String horaFin, List<CategoriaRecurso> categoriasSeleccionadas) {
+        try {
+            if (!(Sesion.getUsuario() instanceof Funcionario)) {
+                vista.mostrarError("Solo un funcionario puede crear reservas");
+                return;
             }
-            recursos.add(disponible);
+            Funcionario funcionario = (Funcionario) Sesion.getUsuario();
+
+            List<Recurso> recursos = new ArrayList<>();
+            for (CategoriaRecurso categoria : categoriasSeleccionadas) {
+                Recurso disponible = reservaService.buscarRecursoDisponible(categoria, fecha, horaInicio, horaFin);
+                if (disponible == null) {
+                    vista.mostrarError("No hay recurso disponible de la categoria: " + categoria.getDescripcion());
+                    return;
+                }
+                recursos.add(disponible);
+            }
+
+            Reserva reserva = new Reserva(reservaService.generarId(), actividad, fecha, horaInicio, horaFin, funcionario);
+            reserva.setRecursos(recursos);
+
+            String error = reservaService.create(reserva);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.mostrarMensaje("RESERVA CREADA");
+            current = null;
+            vista.setCancelarHabilitado(false);
+            vista.limpiarFormulario();
+            cargarLista();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
         }
-
-        Reserva reserva = new Reserva(Service.instance().generarIdReserva(), actividad,
-                fecha, horaInicio, horaFin, funcionario);
-        reserva.setRecursos(recursos);
-
-        Service.instance().createReserva(reserva);
-        model.setCurrent(new Reserva());
-        cargarLista();
-        return reserva;
     }
 
-    public void cancelar(Reserva r) throws Exception {
-        Service.instance().cancelarReserva(r);
-        model.setCurrent(new Reserva());
-        cargarLista();
+    public void cancelar() {
+        try {
+            if (current == null) {
+                vista.mostrarError("Seleccione una reserva de la tabla.");
+                return;
+            }
+            String error = reservaService.cancelar(current);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            current = null;
+            vista.setCancelarHabilitado(false);
+            vista.limpiarFormulario();
+            cargarLista();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 
     public void clear() {
-        model.setCurrent(new Reserva());
-    }
-
-    public ReservaExtraccion extraerConIA(String frase) throws Exception {
-        return Service.instance().extraerReserva(frase);
+        current = null;
+        vista.setCancelarHabilitado(false);
+        vista.limpiarFormulario();
     }
 
     public void edit(int row) {
-        model.setCurrent(model.getList().get(row));
+        current = listaActual.get(row);
+        boolean hayCancelable = current.getId() != null && !current.getId().isEmpty()
+                && current.getEstado() != EstadoReserva.CANCELADA;
+        vista.setCancelarHabilitado(hayCancelable);
     }
 
-    private Recurso buscarRecursoDisponible(CategoriaRecurso categoria, String fecha,
-                                            String horaInicio, String horaFin) {
-        for (Recurso recurso : Service.instance().findAllRecursos()) {
-            if (!categoria.equals(recurso.getCategoria())) {
-                continue;
+    private void procesarIA() {
+        try {
+            String frase = vista.getFrase();
+            if (frase == null || frase.isEmpty()) {
+                vista.mostrarError("Escriba una frase para extraer.");
+                return;
             }
-            if (!recurso.isDisponible()) {
-                continue;
+            ReservaExtraccion r = reservaIAService.extraerReserva(frase);
+            if (r.getActividad() != null) vista.setActividad(r.getActividad());
+            if (r.getFecha() != null) {
+                try {
+                    vista.setFecha(LocalDate.parse(r.getFecha()));
+                } catch (Exception ignored) {
+                    // Si la IA devuelve un formato inesperado, se deja el campo tal cual
+                }
             }
-            boolean ocupado = Service.instance().findAllReservas().stream()
-                    .filter(r -> r.getEstado() != EstadoReserva.CANCELADA)
-                    .filter(r -> r.getFecha().equals(fecha))
-                    .filter(r -> r.getRecursos().contains(recurso))
-                    .anyMatch(r -> seSolapan(r.getHoraInicio(), r.getHoraFin(), horaInicio, horaFin));
-            if (!ocupado) {
-                return recurso;
-            }
+            if (r.getHoraInicio() != null) vista.setHoraInicio(r.getHoraInicio());
+            if (r.getHoraFinal() != null) vista.setHoraFin(r.getHoraFinal());
+            if (r.getCategoriasRecurso() != null && !r.getCategoriasRecurso().isEmpty())
+                vista.seleccionarCategoriasPorNombre(r.getCategoriasRecurso());
+        } catch (Exception e) {
+            vista.mostrarError("Error al procesar IA: " + e.getMessage());
         }
-        return null;
     }
 
-    private boolean seSolapan(String inicioA, String finA, String inicioB, String finB) {
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("H:mm");
-        LocalTime a1 = LocalTime.parse(inicioA, formato);
-        LocalTime a2 = LocalTime.parse(finA, formato);
-        LocalTime b1 = LocalTime.parse(inicioB, formato);
-        LocalTime b2 = LocalTime.parse(finB, formato);
-        return a1.isBefore(b2) && b1.isBefore(a2);
+    public void extraerConIA() {
+        procesarIA();
     }
 }

@@ -1,31 +1,38 @@
 package una.eif206.controller;
 
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Service;
-import una.eif206.model.CalendarizacionModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.service.CalendarioService;
+import una.eif206.service.CategoriaService;
 import una.eif206.view.CalendarizacionView;
 
 public class CalendarizacionController {
 
-    CalendarizacionView view;
-    CalendarizacionModel model;
+    private final CalendarizacionView vista;
+    private final CalendarioService calendarioService;
+    private final CategoriaService categoriaService;
 
-    public CalendarizacionController(CalendarizacionView view, CalendarizacionModel model) {
-        this.view  = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
-        model.setCategorias(Service.instance().findAllCategorias());
+    public CalendarizacionController(CalendarizacionView vista, CalendarioService calendarioService, CategoriaService categoriaService) {
+        this.vista = vista;
+        this.calendarioService = calendarioService;
+        this.categoriaService = categoriaService;
+        vista.setController(this);
+        vista.cargarCategorias(categoriaService.findAll());
     }
 
-    public void cargar(String fecha, CategoriaRecurso categoria) throws Exception {
-        if (fecha == null || fecha.isEmpty())
-            throw new Exception("Debe ingresar una fecha");
-        if (categoria == null)
-            throw new Exception("Debe seleccionar una categoria");
-        model.setFecha(fecha);
-        model.setCategoria(categoria);
-        model.setRecursos(Service.instance().findRecursosByCategoria(categoria));
-        model.setMatriz(Service.instance().getCalendario(fecha, categoria));
+    public void cargar(String fecha, CategoriaRecurso categoria) {
+        try {
+            if (fecha == null || fecha.isEmpty()) {
+                vista.mostrarError("Debe ingresar una fecha");
+                return;
+            }
+            if (categoria == null) {
+                vista.mostrarError("Debe seleccionar una categoria");
+                return;
+            }
+            vista.mostrarMatriz(calendarioService.findByCategoria(categoria),
+                    calendarioService.getCalendario(fecha, categoria));
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 }

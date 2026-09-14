@@ -1,9 +1,9 @@
-package una.eif206.logic;
+package una.eif206.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
-import una.eif206.logic.enums.UsuarioRol;
+import una.eif206.model.enums.UsuarioRol;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({Admin.class, Funcionario.class})

@@ -2,22 +2,19 @@ package una.eif206.view;
 
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.CategoriasController;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.model.CategoriasModel;
-import una.eif206.model.CategoriasTableModel;
+import una.eif206.model.CategoriaRecurso;
 import una.eif206.util.Highlighter;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CategoriasView implements PropertyChangeListener {
+public class CategoriasView {
 
     private JPanel panel;
     private JTextField idFld;
@@ -31,8 +28,13 @@ public class CategoriasView implements PropertyChangeListener {
     private JButton imprimirFld;
     private JTable tabla;
 
+    private final DefaultTableModel modeloTabla = new DefaultTableModel(new Object[]{"ID", "Descripción"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int col) { return false; }
+    };
+    private List<CategoriaRecurso> filas = new ArrayList<>();
+
     CategoriasController controller;
-    CategoriasModel model;
 
     public CategoriasView() {
         panel          = new JPanel(new BorderLayout(5, 5));
@@ -46,6 +48,7 @@ public class CategoriasView implements PropertyChangeListener {
         borrarFld      = new JButton("Borrar");
         imprimirFld    = new JButton("Imprimir PDF");
         tabla          = new JTable();
+        tabla.setModel(modeloTabla);
 
         idFld.setEditable(false);
 
@@ -76,23 +79,13 @@ public class CategoriasView implements PropertyChangeListener {
 
         guardarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.create(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO APLICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.create(take());
             }
         });
 
         modificarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.update(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO MODIFICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.update(take());
             }
         });
 
@@ -103,11 +96,7 @@ public class CategoriasView implements PropertyChangeListener {
         borrarFld.addActionListener(e -> {
             int op = JOptionPane.showConfirmDialog(panel, "Confirma borrar?");
             if (op == JOptionPane.YES_OPTION) {
-                try {
-                    controller.delete(model.getCurrent());
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage());
-                }
+                controller.delete();
             }
         });
 
@@ -121,11 +110,11 @@ public class CategoriasView implements PropertyChangeListener {
 
         imprimirFld.addActionListener(e -> {
             String[] columnas = {"ID", "Descripción"};
-            List<String[]> filas = new ArrayList<>();
-            for (CategoriaRecurso c : model.getList()) {
-                filas.add(new String[]{c.getId(), c.getDescripcion()});
+            List<String[]> filasPdf = new ArrayList<>();
+            for (CategoriaRecurso c : filas) {
+                filasPdf.add(new String[]{c.getId(), c.getDescripcion()});
             }
-            PdfReporter.imprimir(panel, "Reporte de Categorías", columnas, filas);
+            PdfReporter.imprimir(panel, "Reporte de Categorías", columnas, filasPdf);
         });
 
         Highlighter h = new Highlighter(Color.green);
@@ -134,7 +123,6 @@ public class CategoriasView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(CategoriasController c) { this.controller = c; }
-    public void setModel(CategoriasModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
     public CategoriaRecurso take() {
         CategoriaRecurso c = new CategoriaRecurso();
@@ -152,19 +140,33 @@ public class CategoriasView implements PropertyChangeListener {
         return valid;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case CategoriasModel.LIST:
-                int[] cols = {CategoriasTableModel.ID, CategoriasTableModel.DESCRIPCION};
-                tabla.setModel(new CategoriasTableModel(cols, model.getList()));
-                break;
-            case CategoriasModel.CURRENT:
-                idFld.setText(model.getCurrent().getId());
-                descripcionFld.setText(model.getCurrent().getDescripcion());
-                descripcionFld.setBackground(null);
-                break;
+    public void cargarTabla(List<CategoriaRecurso> lista) {
+        filas = lista;
+        modeloTabla.setRowCount(0);
+        for (CategoriaRecurso c : lista) {
+            modeloTabla.addRow(new Object[]{c.getId(), c.getDescripcion()});
         }
-        panel.revalidate();
+    }
+
+    public void setId(String v) { idFld.setText(v); }
+    public void setDescripcion(String v) { descripcionFld.setText(v); descripcionFld.setBackground(null); }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Informacion", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public boolean confirmar(String mensaje) {
+        return JOptionPane.showConfirmDialog(panel, mensaje, "Confirmar", JOptionPane.YES_NO_OPTION)
+                == JOptionPane.YES_OPTION;
+    }
+
+    public void limpiarFormulario() {
+        idFld.setText("");
+        descripcionFld.setText("");
+        descripcionFld.setBackground(null);
     }
 }

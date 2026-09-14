@@ -3,28 +3,25 @@ package una.eif206.view;
 import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.ReservasController;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Reserva;
-import una.eif206.logic.enums.EstadoReserva;
-import una.eif206.model.ReservasModel;
-import una.eif206.model.ReservasTableModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Reserva;
 import una.eif206.util.Highlighter;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
-import una.eif206.util.ReservaExtraccion;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ReservasView implements PropertyChangeListener {
+public class ReservasView {
 
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("H:mm");
     private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
@@ -44,8 +41,14 @@ public class ReservasView implements PropertyChangeListener {
     private JButton extraerIAFld;
     private JTable tabla;
 
+    private final DefaultTableModel modeloTabla = new DefaultTableModel(
+            new Object[]{"ID", "Actividad", "Fecha", "Hora Inicio", "Hora Fin", "Estado"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int col) { return false; }
+    };
+    private List<Reserva> filas = new ArrayList<>();
+
     ReservasController controller;
-    ReservasModel model;
 
     public ReservasView() {
         panel               = new JPanel(new BorderLayout(5, 5));
@@ -69,6 +72,7 @@ public class ReservasView implements PropertyChangeListener {
         imprimirFld.setIcon(IconLoader.load("imprimir"));
         extraerIAFld.setIcon(IconLoader.load("buscar"));
         tabla                = new JTable();
+        tabla.setModel(modeloTabla);
 
         categoriasList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
@@ -106,25 +110,16 @@ public class ReservasView implements PropertyChangeListener {
 
         guardarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.create(actividadFld.getText(), FORMATO_ISO.format(fechaFld.getDate()),
-                            horaInicioFld.getText(), horaFinFld.getText(),
-                            categoriasList.getSelectedValuesList());
-                    JOptionPane.showMessageDialog(panel, "RESERVA CREADA");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.create(actividadFld.getText(), FORMATO_ISO.format(fechaFld.getDate()),
+                        horaInicioFld.getText(), horaFinFld.getText(),
+                        categoriasList.getSelectedValuesList());
             }
         });
 
         cancelarReservaFld.addActionListener(e -> {
             int op = JOptionPane.showConfirmDialog(panel, "¿Cancelar la reserva seleccionada?");
             if (op == JOptionPane.YES_OPTION) {
-                try {
-                    controller.cancelar(model.getCurrent());
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.cancelar();
             }
         });
 
@@ -145,29 +140,7 @@ public class ReservasView implements PropertyChangeListener {
         imprimirFld.addActionListener(e ->
                 PdfReporter.imprimirDesdeTabla(panel, "Reporte de Reservas", tabla));
 
-        extraerIAFld.addActionListener(e -> {
-            String frase = fraseFld.getText();
-            if (frase == null || frase.isEmpty()) {
-                JOptionPane.showMessageDialog(panel, "Escriba una frase para extraer.",
-                        "Validación", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            try {
-                ReservaExtraccion extraccion = controller.extraerConIA(frase);
-                if (extraccion.getActividad() != null) actividadFld.setText(extraccion.getActividad());
-                if (extraccion.getFecha() != null) {
-                    try {
-                        fechaFld.setDate(FORMATO_ISO.parse(extraccion.getFecha()));
-                    } catch (ParseException pe) {
-                        // Si la IA devuelve un formato inesperado, se deja el campo tal cual
-                    }
-                }
-                if (extraccion.getHoraInicio() != null) horaInicioFld.setText(extraccion.getHoraInicio());
-                if (extraccion.getHoraFinal() != null) horaFinFld.setText(extraccion.getHoraFinal());
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        extraerIAFld.addActionListener(e -> controller.extraerConIA());
 
         Highlighter h = new Highlighter(Color.green);
         actividadFld.addMouseListener(h);
@@ -177,7 +150,6 @@ public class ReservasView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(ReservasController c) { this.controller = c; }
-    public void setModel(ReservasModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
     private boolean validate() {
         boolean valid = true;
@@ -235,7 +207,7 @@ public class ReservasView implements PropertyChangeListener {
         }
     }
 
-    private void limpiarFormulario() {
+    public void limpiarFormulario() {
         actividadFld.setText("");
         fechaFld.setDate(null);
         horaInicioFld.setText("");
@@ -246,28 +218,53 @@ public class ReservasView implements PropertyChangeListener {
         horaFinFld.setBackground(null);
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case ReservasModel.LIST:
-                int[] cols = {ReservasTableModel.ID, ReservasTableModel.ACTIVIDAD, ReservasTableModel.FECHA,
-                        ReservasTableModel.HORA_INICIO, ReservasTableModel.HORA_FIN, ReservasTableModel.ESTADO};
-                tabla.setModel(new ReservasTableModel(cols, model.getList()));
-                break;
-            case ReservasModel.CATEGORIAS:
-                categoriasListModel.clear();
-                model.getCategorias().forEach(categoriasListModel::addElement);
-                break;
-            case ReservasModel.CURRENT:
-                Reserva actual = model.getCurrent();
-                boolean hayCancelable = actual != null && actual.getId() != null
-                        && !actual.getId().isEmpty() && actual.getEstado() != EstadoReserva.CANCELADA;
-                cancelarReservaFld.setEnabled(hayCancelable);
-                if (actual == null || actual.getId() == null || actual.getId().isEmpty()) {
-                    limpiarFormulario();
-                }
-                break;
+    public void cargarTabla(List<Reserva> lista) {
+        filas = lista;
+        modeloTabla.setRowCount(0);
+        for (Reserva r : lista) {
+            modeloTabla.addRow(new Object[]{r.getId(), r.getActividad(), r.getFecha(),
+                    r.getHoraInicio(), r.getHoraFin(), r.getEstado()});
         }
-        panel.revalidate();
+    }
+
+    public void cargarCategorias(List<CategoriaRecurso> categorias) {
+        categoriasListModel.clear();
+        categorias.forEach(categoriasListModel::addElement);
+    }
+
+    public void setCancelarHabilitado(boolean habilitado) {
+        cancelarReservaFld.setEnabled(habilitado);
+    }
+
+    public String getFrase() { return fraseFld.getText(); }
+    public void setActividad(String v) { actividadFld.setText(v); }
+    public void setFecha(LocalDate fecha) { fechaFld.setDate(java.sql.Date.valueOf(fecha)); }
+    public void setHoraInicio(String v) { horaInicioFld.setText(v); }
+    public void setHoraFin(String v) { horaFinFld.setText(v); }
+
+    public void seleccionarCategoriasPorNombre(List<String> nombres) {
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < categoriasListModel.size(); i++) {
+            String descripcion = categoriasListModel.get(i).getDescripcion();
+            for (String nombre : nombres) {
+                if (nombre != null && descripcion.equalsIgnoreCase(nombre.trim())) {
+                    indices.add(i);
+                    break;
+                }
+            }
+        }
+        if (!indices.isEmpty()) {
+            int[] arr = new int[indices.size()];
+            for (int i = 0; i < arr.length; i++) arr[i] = indices.get(i);
+            categoriasList.setSelectedIndices(arr);
+        }
+    }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Informacion", JOptionPane.INFORMATION_MESSAGE);
     }
 }

@@ -3,21 +3,18 @@ package una.eif206.view;
 import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.CalendarizacionController;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Recurso;
-import una.eif206.model.CalendarizacionModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Recurso;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class CalendarizacionView implements PropertyChangeListener {
+public class CalendarizacionView {
 
     private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -29,7 +26,6 @@ public class CalendarizacionView implements PropertyChangeListener {
     private JTable tabla;
 
     CalendarizacionController controller;
-    CalendarizacionModel model;
 
     public CalendarizacionView() {
         panel        = new JPanel(new BorderLayout(5, 5));
@@ -56,17 +52,16 @@ public class CalendarizacionView implements PropertyChangeListener {
         panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
 
         cargarFld.addActionListener(e -> {
-            try {
-                if (fechaFld.getDate() == null) throw new Exception("Debe seleccionar una fecha");
-                controller.cargar(
-                        FORMATO_ISO.format(fechaFld.getDate()),
-                        (CategoriaRecurso) categoriaFld.getSelectedItem()
-                );
-            } catch (Exception ex) {
+            if (fechaFld.getDate() == null) {
                 fechaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-                JOptionPane.showMessageDialog(panel, ex.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                mostrarError("Debe seleccionar una fecha");
+                return;
             }
+            fechaFld.setBackground(null);
+            controller.cargar(
+                    FORMATO_ISO.format(fechaFld.getDate()),
+                    (CategoriaRecurso) categoriaFld.getSelectedItem()
+            );
         });
 
         imprimirFld.addActionListener(e ->
@@ -75,27 +70,24 @@ public class CalendarizacionView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(CalendarizacionController c) { this.controller = c; }
-    public void setModel(CalendarizacionModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case CalendarizacionModel.CATEGORIAS:
-                categoriaFld.removeAllItems();
-                for (CategoriaRecurso c : model.getCategorias()) {
-                    categoriaFld.addItem(c);
-                }
-                break;
-            case CalendarizacionModel.MATRIZ:
-                actualizarTabla();
-                break;
+    public void cargarCategorias(List<CategoriaRecurso> categorias) {
+        categoriaFld.removeAllItems();
+        for (CategoriaRecurso c : categorias) {
+            categoriaFld.addItem(c);
         }
+    }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMatriz(List<Recurso> recursos, String[][] matriz) {
+        actualizarTabla(recursos, matriz);
         panel.revalidate();
     }
 
-    private void actualizarTabla() {
-        String[][] matriz = model.getMatriz();
-        List<Recurso> recursos = model.getRecursos();
+    private void actualizarTabla(List<Recurso> recursos, String[][] matriz) {
         if (matriz == null || matriz.length == 0 || recursos == null || recursos.isEmpty()) return;
 
         String[] headers = new String[recursos.size() + 1];

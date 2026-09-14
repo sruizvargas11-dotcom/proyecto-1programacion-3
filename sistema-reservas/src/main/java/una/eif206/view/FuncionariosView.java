@@ -2,22 +2,19 @@ package una.eif206.view;
 
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.FuncionariosController;
-import una.eif206.logic.Funcionario;
-import una.eif206.model.FuncionariosModel;
-import una.eif206.model.FuncionariosTableModel;
+import una.eif206.model.Funcionario;
 import una.eif206.util.Highlighter;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FuncionariosView implements PropertyChangeListener {
+public class FuncionariosView {
 
     private JPanel panel;
     private JTextField idFld;
@@ -32,8 +29,13 @@ public class FuncionariosView implements PropertyChangeListener {
     private JButton imprimirFld;
     private JTable tabla;
 
+    private final DefaultTableModel modeloTabla = new DefaultTableModel(new Object[]{"ID", "Nombre", "Teléfono"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int col) { return false; }
+    };
+    private List<Funcionario> filas = new ArrayList<>();
+
     FuncionariosController controller;
-    FuncionariosModel model;
 
     public FuncionariosView() {
         panel        = new JPanel(new BorderLayout(5, 5));
@@ -48,6 +50,7 @@ public class FuncionariosView implements PropertyChangeListener {
         borrarFld    = new JButton("Borrar");
         imprimirFld  = new JButton("Imprimir PDF");
         tabla        = new JTable();
+        tabla.setModel(modeloTabla);
 
         JPanel form = new JPanel(new GridLayout(5, 2, 5, 5));
         form.add(new JLabel("ID:"));       form.add(idFld);
@@ -77,23 +80,13 @@ public class FuncionariosView implements PropertyChangeListener {
 
         guardarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.create(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO APLICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.create(take());
             }
         });
 
         modificarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.update(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO MODIFICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.update(take());
             }
         });
 
@@ -104,11 +97,7 @@ public class FuncionariosView implements PropertyChangeListener {
         borrarFld.addActionListener(e -> {
             int op = JOptionPane.showConfirmDialog(panel, "Confirma borrar?");
             if (op == JOptionPane.YES_OPTION) {
-                try {
-                    controller.delete(model.getCurrent());
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage());
-                }
+                controller.delete();
             }
         });
 
@@ -122,11 +111,11 @@ public class FuncionariosView implements PropertyChangeListener {
 
         imprimirFld.addActionListener(e -> {
             String[] columnas = {"ID", "Nombre", "Teléfono"};
-            List<String[]> filas = new ArrayList<>();
-            for (Funcionario f : model.getList()) {
-                filas.add(new String[]{f.getId(), f.getNombre(), f.getTelefono()});
+            List<String[]> filasPdf = new ArrayList<>();
+            for (Funcionario f : filas) {
+                filasPdf.add(new String[]{f.getId(), f.getNombre(), f.getTelefono()});
             }
-            PdfReporter.imprimir(panel, "Reporte de Funcionarios", columnas, filas);
+            PdfReporter.imprimir(panel, "Reporte de Funcionarios", columnas, filasPdf);
         });
 
         Highlighter h = new Highlighter(Color.green);
@@ -137,7 +126,6 @@ public class FuncionariosView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(FuncionariosController c) { this.controller = c; }
-    public void setModel(FuncionariosModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
     public Funcionario take() {
         Funcionario f = new Funcionario();
@@ -160,21 +148,36 @@ public class FuncionariosView implements PropertyChangeListener {
         return valid;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case FuncionariosModel.LIST:
-                int[] cols = {FuncionariosTableModel.ID, FuncionariosTableModel.NOMBRE, FuncionariosTableModel.TELEFONO};
-                tabla.setModel(new FuncionariosTableModel(cols, model.getList()));
-                break;
-            case FuncionariosModel.CURRENT:
-                idFld.setText(model.getCurrent().getId());
-                nombreFld.setText(model.getCurrent().getNombre());
-                telefonoFld.setText(model.getCurrent().getTelefono());
-                idFld.setBackground(null);
-                nombreFld.setBackground(null);
-                break;
+    public void cargarTabla(List<Funcionario> lista) {
+        filas = lista;
+        modeloTabla.setRowCount(0);
+        for (Funcionario f : lista) {
+            modeloTabla.addRow(new Object[]{f.getId(), f.getNombre(), f.getTelefono()});
         }
-        panel.revalidate();
+    }
+
+    public void setId(String v) { idFld.setText(v); }
+    public void setNombre(String v) { nombreFld.setText(v); }
+    public void setTelefono(String v) { telefonoFld.setText(v); }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Informacion", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public boolean confirmar(String mensaje) {
+        return JOptionPane.showConfirmDialog(panel, mensaje, "Confirmar", JOptionPane.YES_NO_OPTION)
+                == JOptionPane.YES_OPTION;
+    }
+
+    public void limpiarFormulario() {
+        idFld.setText("");
+        nombreFld.setText("");
+        telefonoFld.setText("");
+        idFld.setBackground(null);
+        nombreFld.setBackground(null);
     }
 }

@@ -1,57 +1,110 @@
 package una.eif206.controller;
 
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Recurso;
-import una.eif206.logic.Service;
-import una.eif206.model.RecursosModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Recurso;
+import una.eif206.service.CategoriaService;
+import una.eif206.service.RecursoService;
 import una.eif206.view.RecursosView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecursosController {
 
-    RecursosView view;
-    RecursosModel model;
+    private final RecursosView vista;
+    private final RecursoService recursoService;
+    private final CategoriaService categoriaService;
+    private List<Recurso> listaActual = new ArrayList<>();
+    private Recurso current;
 
-    public RecursosController(RecursosView view, RecursosModel model) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
-        model.setCategorias(Service.instance().findAllCategorias());
-        model.setList(Service.instance().findAllRecursos());
+    public RecursosController(RecursosView vista, RecursoService recursoService, CategoriaService categoriaService) {
+        this.vista = vista;
+        this.recursoService = recursoService;
+        this.categoriaService = categoriaService;
+        vista.setController(this);
+        vista.cargarCategorias(categoriaService.findAll());
+        cargarListado();
     }
 
-    public void create(Recurso e) throws Exception {
-        Service.instance().createRecurso(e);
-        model.setCurrent(new Recurso());
-        model.setList(Service.instance().findAllRecursos());
+    private void cargarListado() {
+        listaActual = recursoService.findAll();
+        vista.cargarTabla(listaActual);
     }
 
-    public void delete(Recurso e) throws Exception {
-        Service.instance().deleteRecurso(e);
-        model.setCurrent(new Recurso());
-        model.setList(Service.instance().findAllRecursos());
+    public void create(Recurso e) {
+        try {
+            String error = recursoService.create(e);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.mostrarMensaje("REGISTRO APLICADO");
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 
-    public void update(Recurso e) throws Exception {
-        Service.instance().updateRecurso(e);
-        model.setCurrent(new Recurso());
-        model.setList(Service.instance().findAllRecursos());
+    public void update(Recurso e) {
+        try {
+            if (current == null) {
+                vista.mostrarError("Seleccione un recurso de la tabla.");
+                return;
+            }
+            String error = recursoService.update(e);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.mostrarMensaje("REGISTRO MODIFICADO");
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
+    }
+
+    public void delete() {
+        try {
+            if (current == null) {
+                vista.mostrarError("Seleccione un recurso de la tabla.");
+                return;
+            }
+            String error = recursoService.delete(current);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 
     public void clear() {
-        model.setCurrent(new Recurso());
-        model.setList(Service.instance().findAllRecursos());
+        current = null;
+        vista.limpiarFormulario();
+        cargarListado();
     }
 
     public void edit(int row) {
-        model.setCurrent(model.getList().get(row));
+        current = listaActual.get(row);
+        vista.setId(current.getId());
+        vista.setDescripcion(current.getDescripcion());
+        vista.setCategoria(current.getCategoria());
     }
 
     public void filtrarPorCategoria(CategoriaRecurso categoria) {
         if (categoria == null) {
-            model.setList(Service.instance().findAllRecursos());
+            listaActual = recursoService.findAll();
         } else {
-            model.setList(Service.instance().findRecursosByCategoria(categoria));
+            listaActual = recursoService.findByCategoria(categoria);
         }
+        vista.cargarTabla(listaActual);
     }
 }

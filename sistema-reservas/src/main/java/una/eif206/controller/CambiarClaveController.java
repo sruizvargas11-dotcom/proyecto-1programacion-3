@@ -1,29 +1,38 @@
 package una.eif206.controller;
 
-import una.eif206.logic.Service;
-import una.eif206.logic.Usuario;
-import una.eif206.model.CambiarClaveModel;
-import una.eif206.util.Sesion;
+import una.eif206.model.Usuario;
+import una.eif206.service.UsuarioService;
 import una.eif206.view.CambiarClaveView;
 
 public class CambiarClaveController {
 
-    CambiarClaveView view;
-    CambiarClaveModel model;
+    private final CambiarClaveView vista;
+    private final UsuarioService usuarioService;
+    private final Usuario usuario;
 
-    public CambiarClaveController(CambiarClaveView view, CambiarClaveModel model, Usuario usuario) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
-        if (usuario != null) {
-            model.setUsuario(usuario);
-        }
+    public CambiarClaveController(CambiarClaveView vista, UsuarioService usuarioService, Usuario usuario) {
+        this.vista = vista;
+        this.usuarioService = usuarioService;
+        this.usuario = usuario;
+        vista.setController(this);
     }
 
-    public void cambiarClave(String actual, String nueva) throws Exception {
-        Usuario u = model.getUsuario();
-        if (u == null) throw new Exception("Debe iniciar sesion primero");
-        Service.instance().cambiarClave(u, actual, nueva);
+    public boolean cambiarClave(String actual, String nueva) {
+        try {
+            if (usuario == null) {
+                vista.mostrarError("Debe iniciar sesion primero");
+                return false;
+            }
+            String error = usuarioService.cambiarClave(usuario, actual, nueva);
+            if (error != null) {
+                vista.mostrarError(error);
+                return false;
+            }
+            vista.mostrarMensaje("Clave cambiada exitosamente");
+            return true;
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+            return false;
+        }
     }
 }

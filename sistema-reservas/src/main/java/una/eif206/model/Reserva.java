@@ -1,10 +1,10 @@
-package una.eif206.logic;
+package una.eif206.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlIDREF;
-import una.eif206.logic.enums.EstadoReserva;
+import una.eif206.model.enums.EstadoReserva;
 
 import java.util.ArrayList;
 import java.util.List;

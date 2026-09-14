@@ -2,14 +2,11 @@ package una.eif206.view;
 
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.CambiarClaveController;
-import una.eif206.model.CambiarClaveModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
-public class CambiarClaveView extends JDialog implements PropertyChangeListener {
+public class CambiarClaveView extends JDialog {
 
     private JPasswordField claveActualFld;
     private JPasswordField claveNuevaFld;
@@ -17,7 +14,6 @@ public class CambiarClaveView extends JDialog implements PropertyChangeListener 
     private JButton okFld;
     private JButton cancelarFld;
     CambiarClaveController controller;
-    CambiarClaveModel model;
 
     public CambiarClaveView() {
         setTitle("Cambiar Clave");
@@ -40,22 +36,21 @@ public class CambiarClaveView extends JDialog implements PropertyChangeListener 
         add(panel);
 
         okFld.addActionListener(e -> {
-            try {
-                String actual = new String(claveActualFld.getPassword());
-                String nueva  = new String(claveNuevaFld.getPassword());
-                String nueva2 = new String(claveNueva2Fld.getPassword());
-                if (!nueva.equals(nueva2)) {
-                    claveNuevaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-                    claveNueva2Fld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-                    JOptionPane.showMessageDialog(this, "Las claves nuevas no coinciden", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                controller.cambiarClave(actual, nueva);
-                JOptionPane.showMessageDialog(this, "Clave cambiada exitosamente");
+            String actual = new String(claveActualFld.getPassword());
+            String nueva  = new String(claveNuevaFld.getPassword());
+            String nueva2 = new String(claveNueva2Fld.getPassword());
+            if (!nueva.equals(nueva2)) {
+                claveNuevaFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
+                claveNueva2Fld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
+                mostrarError("Las claves nuevas no coinciden");
+                return;
+            }
+            claveNuevaFld.setBackground(null);
+            claveNueva2Fld.setBackground(null);
+            if (controller.cambiarClave(actual, nueva)) {
                 dispose();
-            } catch (Exception ex) {
+            } else {
                 claveActualFld.setBackground(ApplicationLogin.BACKGROUND_ERROR);
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -63,8 +58,12 @@ public class CambiarClaveView extends JDialog implements PropertyChangeListener 
     }
 
     public void setController(CambiarClaveController c) { this.controller = c; }
-    public void setModel(CambiarClaveModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {}
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Informacion", JOptionPane.INFORMATION_MESSAGE);
+    }
 }

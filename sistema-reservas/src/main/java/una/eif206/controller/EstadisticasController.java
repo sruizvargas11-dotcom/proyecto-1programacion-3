@@ -1,23 +1,26 @@
 package una.eif206.controller;
 
-import una.eif206.logic.Service;
-import una.eif206.model.EstadisticasModel;
+import una.eif206.service.EstadisticasService;
 import una.eif206.view.EstadisticasView;
 
 public class EstadisticasController {
 
-    EstadisticasView view;
-    EstadisticasModel model;
+    private final EstadisticasView vista;
+    private final EstadisticasService estadisticasService;
 
-    public EstadisticasController(EstadisticasView view, EstadisticasModel model) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
+    public EstadisticasController(EstadisticasView vista, EstadisticasService estadisticasService) {
+        this.vista = vista;
+        this.estadisticasService = estadisticasService;
+        vista.setController(this);
     }
 
-    public void generar(String desde, String hasta) throws Exception {
-        model.setDatosRecursos(Service.instance().getEstadisticasRecursos(desde, hasta));
-        model.setDatosActividades(Service.instance().getEstadisticasActividades(desde, hasta));
+    public void generar(String desde, String hasta) {
+        try {
+            vista.mostrarGraficos(
+                    estadisticasService.getEstadisticasRecursos(desde, hasta),
+                    estadisticasService.getEstadisticasActividades(desde, hasta));
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 }

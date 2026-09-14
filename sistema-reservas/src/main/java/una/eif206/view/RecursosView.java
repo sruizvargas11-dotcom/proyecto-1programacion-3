@@ -2,23 +2,20 @@ package una.eif206.view;
 
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.RecursosController;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Recurso;
-import una.eif206.model.RecursosModel;
-import una.eif206.model.RecursosTableModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Recurso;
 import una.eif206.util.Highlighter;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecursosView implements PropertyChangeListener {
+public class RecursosView {
 
     private JPanel panel;
     private JTextField idFld;
@@ -34,8 +31,13 @@ public class RecursosView implements PropertyChangeListener {
 
     private boolean loadingCategorias = false;
 
+    private final DefaultTableModel modeloTabla = new DefaultTableModel(new Object[]{"ID", "Descripción", "Categoría"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int col) { return false; }
+    };
+    private List<Recurso> filas = new ArrayList<>();
+
     RecursosController controller;
-    RecursosModel model;
 
     public RecursosView() {
         panel          = new JPanel(new BorderLayout(5, 5));
@@ -49,6 +51,7 @@ public class RecursosView implements PropertyChangeListener {
         borrarFld      = new JButton("Borrar");
         imprimirFld    = new JButton("Imprimir PDF");
         tabla          = new JTable();
+        tabla.setModel(modeloTabla);
 
         JPanel form = new JPanel(new GridLayout(4, 2, 5, 5));
         form.add(new JLabel("ID:"));          form.add(idFld);
@@ -83,23 +86,13 @@ public class RecursosView implements PropertyChangeListener {
 
         guardarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.create(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO APLICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.create(take());
             }
         });
 
         modificarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    controller.update(take());
-                    JOptionPane.showMessageDialog(panel, "REGISTRO MODIFICADO");
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                controller.update(take());
             }
         });
 
@@ -108,11 +101,7 @@ public class RecursosView implements PropertyChangeListener {
         borrarFld.addActionListener(e -> {
             int op = JOptionPane.showConfirmDialog(panel, "Confirma borrar?");
             if (op == JOptionPane.YES_OPTION) {
-                try {
-                    controller.delete(model.getCurrent());
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage());
-                }
+                controller.delete();
             }
         });
 
@@ -132,12 +121,12 @@ public class RecursosView implements PropertyChangeListener {
 
         imprimirFld.addActionListener(e -> {
             String[] columnas = {"ID", "Descripción", "Categoría"};
-            List<String[]> filas = new ArrayList<>();
-            for (Recurso r : model.getList()) {
+            List<String[]> filasPdf = new ArrayList<>();
+            for (Recurso r : filas) {
                 String cat = r.getCategoria() != null ? r.getCategoria().getDescripcion() : "";
-                filas.add(new String[]{r.getId(), r.getDescripcion(), cat});
+                filasPdf.add(new String[]{r.getId(), r.getDescripcion(), cat});
             }
-            PdfReporter.imprimir(panel, "Reporte de Recursos", columnas, filas);
+            PdfReporter.imprimir(panel, "Reporte de Recursos", columnas, filasPdf);
         });
 
         Highlighter h = new Highlighter(Color.green);
@@ -146,7 +135,6 @@ public class RecursosView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(RecursosController c) { this.controller = c; }
-    public void setModel(RecursosModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
     public Recurso take() {
         Recurso r = new Recurso();
@@ -173,32 +161,49 @@ public class RecursosView implements PropertyChangeListener {
         return valid;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case RecursosModel.LIST:
-                int[] cols = {RecursosTableModel.ID, RecursosTableModel.DESCRIPCION, RecursosTableModel.CATEGORIA};
-                tabla.setModel(new RecursosTableModel(cols, model.getList()));
-                break;
-            case RecursosModel.CATEGORIAS:
-                loadingCategorias = true;
-                categoriaFld.removeAllItems();
-                for (CategoriaRecurso c : model.getCategorias()) categoriaFld.addItem(c);
-
-                filtroFld.removeAllItems();
-                filtroFld.addItem(null);
-                for (CategoriaRecurso c : model.getCategorias()) filtroFld.addItem(c);
-                loadingCategorias = false;
-                break;
-            case RecursosModel.CURRENT:
-                idFld.setText(model.getCurrent().getId());
-                descripcionFld.setText(model.getCurrent().getDescripcion());
-                categoriaFld.setSelectedItem(model.getCurrent().getCategoria());
-                idFld.setBackground(null);
-                descripcionFld.setBackground(null);
-                categoriaFld.setBackground(null);
-                break;
+    public void cargarTabla(List<Recurso> lista) {
+        filas = lista;
+        modeloTabla.setRowCount(0);
+        for (Recurso r : lista) {
+            String cat = r.getCategoria() != null ? r.getCategoria().getDescripcion() : "";
+            modeloTabla.addRow(new Object[]{r.getId(), r.getDescripcion(), cat});
         }
-        panel.revalidate();
+    }
+
+    public void cargarCategorias(List<CategoriaRecurso> categorias) {
+        loadingCategorias = true;
+        categoriaFld.removeAllItems();
+        for (CategoriaRecurso c : categorias) categoriaFld.addItem(c);
+
+        filtroFld.removeAllItems();
+        filtroFld.addItem(null);
+        for (CategoriaRecurso c : categorias) filtroFld.addItem(c);
+        loadingCategorias = false;
+    }
+
+    public void setId(String v) { idFld.setText(v); }
+    public void setDescripcion(String v) { descripcionFld.setText(v); }
+    public void setCategoria(CategoriaRecurso c) { categoriaFld.setSelectedItem(c); }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Informacion", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public boolean confirmar(String mensaje) {
+        return JOptionPane.showConfirmDialog(panel, mensaje, "Confirmar", JOptionPane.YES_NO_OPTION)
+                == JOptionPane.YES_OPTION;
+    }
+
+    public void limpiarFormulario() {
+        idFld.setText("");
+        descripcionFld.setText("");
+        categoriaFld.setSelectedItem(null);
+        idFld.setBackground(null);
+        descripcionFld.setBackground(null);
+        categoriaFld.setBackground(null);
     }
 }

@@ -1,4 +1,4 @@
-package una.eif206.logic;
+package una.eif206.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;

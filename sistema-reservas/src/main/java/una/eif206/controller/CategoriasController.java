@@ -1,53 +1,102 @@
 package una.eif206.controller;
 
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Service;
-import una.eif206.model.CategoriasModel;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.service.CategoriaService;
 import una.eif206.view.CategoriasView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CategoriasController {
 
-    CategoriasView view;
-    CategoriasModel model;
+    private final CategoriasView vista;
+    private final CategoriaService categoriaService;
+    private List<CategoriaRecurso> listaActual = new ArrayList<>();
+    private CategoriaRecurso current;
 
-    public CategoriasController(CategoriasView view, CategoriasModel model) {
-        this.view = view;
-        this.model = model;
-        view.setController(this);
-        view.setModel(model);
-        model.setList(Service.instance().findAllCategorias());
+    public CategoriasController(CategoriasView vista, CategoriaService categoriaService) {
+        this.vista = vista;
+        this.categoriaService = categoriaService;
+        vista.setController(this);
+        cargarListado();
     }
 
-    public void create(CategoriaRecurso e) throws Exception {
-        Service.instance().createCategoria(e);
-        model.setCurrent(new CategoriaRecurso());
-        model.setList(Service.instance().findAllCategorias());
+    private void cargarListado() {
+        listaActual = categoriaService.findAll();
+        vista.cargarTabla(listaActual);
     }
 
-    public void delete(CategoriaRecurso e) throws Exception {
-        Service.instance().deleteCategoria(e);
-        model.setCurrent(new CategoriaRecurso());
-        model.setList(Service.instance().findAllCategorias());
+    public void create(CategoriaRecurso e) {
+        try {
+            String error = categoriaService.create(e);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.mostrarMensaje("REGISTRO APLICADO");
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 
-    public void update(CategoriaRecurso e) throws Exception {
-        Service.instance().updateCategoria(e);
-        model.setCurrent(new CategoriaRecurso());
-        model.setList(Service.instance().findAllCategorias());
+    public void update(CategoriaRecurso e) {
+        try {
+            if (current == null) {
+                vista.mostrarError("Seleccione una categoria de la tabla.");
+                return;
+            }
+            String error = categoriaService.update(e);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.mostrarMensaje("REGISTRO MODIFICADO");
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
+    }
+
+    public void delete() {
+        try {
+            if (current == null) {
+                vista.mostrarError("Seleccione una categoria de la tabla.");
+                return;
+            }
+            String error = categoriaService.delete(current);
+            if (error != null) {
+                vista.mostrarError(error);
+                return;
+            }
+            vista.limpiarFormulario();
+            current = null;
+            cargarListado();
+        } catch (Exception ex) {
+            vista.mostrarError("Error inesperado: " + ex.getMessage());
+        }
     }
 
     public void clear() {
-        model.setCurrent(new CategoriaRecurso());
-        model.setList(Service.instance().findAllCategorias());
+        current = null;
+        vista.limpiarFormulario();
+        cargarListado();
     }
 
     public void edit(int row) {
-        model.setCurrent(model.getList().get(row));
+        current = listaActual.get(row);
+        vista.setId(current.getId());
+        vista.setDescripcion(current.getDescripcion());
     }
 
     public void search(String descripcion) {
         CategoriaRecurso c = new CategoriaRecurso();
         c.setDescripcion(descripcion);
-        model.setList(Service.instance().searchCategorias(c));
+        listaActual = categoriaService.search(c);
+        vista.cargarTabla(listaActual);
     }
 }

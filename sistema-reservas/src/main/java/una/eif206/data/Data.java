@@ -1,7 +1,7 @@
 package una.eif206.data;
 
 import jakarta.xml.bind.annotation.*;
-import una.eif206.logic.*;
+import una.eif206.model.*;
 
 import java.util.ArrayList;
 import java.util.List;

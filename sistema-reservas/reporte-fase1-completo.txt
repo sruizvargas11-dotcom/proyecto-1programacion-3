@@ -1,0 +1,250 @@
+════════════════════════════════════════════════════
+REPORTE FINAL — ESTADO ACTUAL DEL PROYECTO (FASE 1 COMPLETA)
+Fecha: 2026-09-14
+Rama: refactor-arquitectura-profe (backup en tag backup-original,
+      commit "backup antes de reestructura" sobre la rama e1)
+════════════════════════════════════════════════════
+
+1. ESTRUCTURA FINAL DE PAQUETES
+════════════════════════════════════════════════════
+find src/main/java -name "*.java" | sort  →  45 archivos
+
+una.eif206.ApplicationLogin
+
+una.eif206.controller (9)
+  ActividadesController, CalendarizacionController,
+  CambiarClaveController, CategoriasController,
+  EstadisticasController, FuncionariosController,
+  LoginController, RecursosController, ReservasController
+
+una.eif206.data (2)
+  Data, XMLHelper
+
+una.eif206.logic (7)
+  Admin, CategoriaRecurso, Funcionario, Persona, Recurso,
+  Reserva, Usuario
+una.eif206.logic.enums (2)
+  EstadoReserva, UsuarioRol
+
+una.eif206.service (9)
+  ActividadesService, CalendarioService, CategoriaService,
+  EstadisticasService, FuncionarioService, RecursoService,
+  ReservaIAService, ReservaService, UsuarioService
+
+una.eif206.util (7)
+  AbstractModel, AbstractTableModel, Highlighter, IconLoader,
+  PdfReporter, ReservaExtraccion, ReservaExtractorService, Sesion
+
+una.eif206.view (9)
+  ActividadesView, CalendarizacionView, CambiarClaveView,
+  CategoriasView, EstadisticasView, FuncionariosView,
+  LoginView, RecursosView, ReservasView
+
+CONFIRMADO:
+  model/            → NO existe (eliminado en PASO 6 de FASE 1)
+  logic/Service.java → NO existe (eliminado en PASO 6 de FASE 1)
+
+2. TOTAL DE TESTS Y RESULTADO
+════════════════════════════════════════════════════
+mvn test (surefire — tests unitarios):
+  una.eif206.data.PersistenciaXMLTest        7 tests, 0 failures, 0 errors
+  una.eif206.service.CategoriaServiceTest    8 tests, 0 failures, 0 errors
+  una.eif206.service.FuncionarioServiceTest  8 tests, 0 failures, 0 errors
+  una.eif206.service.RecursoServiceTest      7 tests, 0 failures, 0 errors
+  una.eif206.service.ReservaServiceTest     10 tests, 0 failures, 0 errors
+  una.eif206.service.UsuarioServiceTest     10 tests, 0 failures, 0 errors
+  una.eif206.ServiceTest                    28 tests, 0 failures, 0 errors
+  ────────────────────────────────────────────────────────────
+  TOTAL mvn test:                           78 tests, 0 failures, 0 errors
+  BUILD SUCCESS
+
+mvn verify (failsafe — agrega tests de integracion):
+  una.eif206.ServiceIntegrationIT            7 tests, 0 failures, 0 errors
+  ────────────────────────────────────────────────────────────
+  TOTAL GENERAL (mvn verify):                85 tests, 0 failures, 0 errors
+  BUILD SUCCESS
+
+Meta cumplida: 85/85 tests en verde (35 existentes de FASE 1 + 50 nuevos).
+
+3. LOS 6 ARCHIVOS DE TEST NUEVOS CREADOS (50 TESTS)
+════════════════════════════════════════════════════
+
+── src/test/java/una/eif206/service/UsuarioServiceTest.java (10) ──
+  1. loginAdminCorrecto
+  2. loginFuncionarioCorrecto
+  3. loginConClaveIncorrecta
+  4. loginConIdInexistente
+  5. loginConCamposVacios
+  6. cambiarClaveCorrecta
+  7. cambiarClaveIncorrecta_claveActualMal
+  8. cambiarClaveIncorrecta_camposVacios
+  9. loginConNuevaClaveDepuesDeCambio
+  10. loginConClaveViejaFallaDepuesDeCambio
+
+── src/test/java/una/eif206/service/FuncionarioServiceTest.java (8) ──
+  11. crearFuncionarioValido
+  12. crearFuncionarioDuplicado
+  13. crearFuncionarioCamposVacios
+  14. obtenerTodosFuncionarios
+  15. modificarFuncionarioExistente
+  16. modificarFuncionarioInexistente
+  17. eliminarFuncionarioExistente
+  18. eliminarFuncionarioInexistente
+
+── src/test/java/una/eif206/service/CategoriaServiceTest.java (8) ──
+  19. crearCategoriaValida
+  20. crearCategoriaDuplicada
+  21. crearCategoriaIdAutogenerado
+  22. modificarCategoriaExistente
+  23. eliminarCategoriaExitosa
+  24. eliminarCategoriaConRecursosAsociados
+  25. buscarCategoriaPorId
+  26. obtenerTodasCategorias
+
+── src/test/java/una/eif206/service/RecursoServiceTest.java (7) ──
+  27. crearRecursoValido
+  28. crearRecursoDuplicado
+  29. modificarRecursoExistente
+  30. eliminarRecursoExistente
+  31. filtrarRecursosPorCategoria
+  32. obtenerTodosRecursos
+  33. crearRecursoSinCategoria
+
+── src/test/java/una/eif206/service/ReservaServiceTest.java (10) ──
+  34. crearReservaSinSolapamiento
+  35. crearReservaConSolapamientoMismoRecurso
+  36. crearSegundaReservaHorarioDiferente
+  37. cancelarReservaActiva
+  38. cancelarReservaYaCandelada
+  39. soloReservasDelFuncionarioEnSesion
+  40. reservaApareceConEstadoActiva
+  41. horaInicioMayorQueHoraFin_error
+  42. crearReservaSinActividad_error
+  43. crearReservaSinCategoria_error
+
+── src/test/java/una/eif206/data/PersistenciaXMLTest.java (7) ──
+  44. guardarYRecargarFuncionario
+  45. guardarYRecargarCategoria
+  46. guardarYRecargarRecurso
+  47. guardarYRecargarReserva
+  48. dataVaciaGuardaYRecargaSinErrores
+  49. modificacionPersisteDespuesDeRecargar
+  50. eliminacionPersisteDespuesDeRecargar
+
+Todos usan Data en memoria (new Data()) — ninguno toca data/data.xml del
+proyecto. PersistenciaXMLTest usa File.createTempFile(...) + XMLHelper
+apuntando a ese archivo temporal, con deleteOnExit(). Sin mocks, sin
+Mockito — solo instancias reales de *Service con Data. Cada test crea su
+propio Data/servicios en @BeforeEach (independientes entre si).
+
+4. LAS 3 VALIDACIONES DE PRODUCCION AGREGADAS
+════════════════════════════════════════════════════
+Se agregaron durante la creacion de los 50 tests, porque varios tests del
+checklist (nombrados explicitamente con sufijo "_error" o equivalentes)
+exigian que el Service rechazara datos invalidos que antes aceptaba sin
+problema. Se verifico en cada caso que NO rompen ninguno de los 35 tests
+ya existentes (7 tests viejos tuvieron que actualizarse para asignarle un
+recurso valido a sus reservas, ya que antes las creaban sin ninguno).
+
+  1) ReservaService.create(Reserva e) — ahora valida, en este orden:
+       - actividad no vacia            → "La actividad es obligatoria"
+       - al menos un recurso asignado  → "Debe asignar al menos un
+                                          recurso a la reserva"
+       - horaInicio < horaFin          → "La hora de inicio debe ser
+                                          anterior a la hora de fin"
+     (antes de estas, no existia ninguna validacion de este tipo; solo se
+     verificaba duplicado de ID y solapamiento de horario)
+
+  2) FuncionarioService.create(Funcionario e) — ahora valida que ID y
+     nombre no esten vacios: "El ID y el nombre son obligatorios"
+
+  3) RecursoService.create(Recurso e) — ahora valida que la categoria no
+     sea null: "Debe asignar una categoria al recurso"
+
+  Adicional (no es una validacion, es un metodo nuevo): se agrego
+  CategoriaService.findById(String id), que no existia, para poder
+  implementar el test buscarCategoriaPorId().
+
+5. LOS 2 BUGS CORREGIDOS (BUG-M1 y BUG-M3)
+════════════════════════════════════════════════════
+(Identificados en reporte-bugs.txt, corregidos en esta rama)
+
+  BUG-M1 — IA no preseleccionaba categorias de recurso:
+    - ReservasView: se agrego el metodo publico
+      seleccionarCategoriasPorNombre(List<String> nombres), que recorre
+      categoriasListModel y marca (setSelectedIndices) los items cuya
+      descripcion coincide (case-insensitive) con alguno de los nombres
+      recibidos.
+    - ReservasController.procesarIA(): despues de precargar los campos de
+      texto extraidos por la IA, ahora llama
+      vista.seleccionarCategoriasPorNombre(r.getCategoriasRecurso())
+      cuando la lista no es null ni vacia.
+
+  BUG-M3 — ShutdownHook solo capturaba Exception, no Throwable:
+    - ApplicationLogin.java, Runnable del ShutdownHook en main(): se
+      cambio `catch (Exception e)` por `catch (Throwable e)`, para que
+      un Error (p.ej. el NoClassDefFoundError de JAXB detectado bajo
+      exec-maven-plugin) tambien quede atrapado y logueado al cerrar,
+      en vez de escapar como stacktrace no controlado.
+
+6. ESTADO DE COMMITS
+════════════════════════════════════════════════════
+NADA ESTA COMMITEADO TODAVIA en refactor-arquitectura-profe.
+
+Unico commit existente en esta rama es el heredado de e1:
+  096f345 "backup antes de reestructura" (tag: backup-original)
+
+Todo lo siguiente sigue como cambios sin commitear en el working tree:
+  - Reestructura completa de FASE 1 (9 services, 9 controllers, 9 views
+    migrados, model/ y logic/Service.java eliminados)
+  - Migracion de ServiceTest.java/ServiceIntegrationIT.java a los
+    *Service nuevos
+  - BUG-M1 y BUG-M3 (seccion 5)
+  - Las 3 validaciones de produccion + CategoriaService.findById()
+    (seccion 4)
+  - Los 6 archivos de test nuevos con 50 tests (seccion 3)
+  - reporte-previo.txt, reporte-final.txt, reporte-bugs.txt,
+    reporte-fase1-completo.txt (este archivo)
+
+El usuario decidio explicitamente NO commitear todavia: "No hagas commit
+todavia. Quiero probar la app primero." Por lo tanto no se ha creado
+ningun commit nuevo en esta sesion, a la espera de esa prueba manual.
+
+7. PENDIENTE: PRUEBA VISUAL MANUAL DEL USUARIO
+════════════════════════════════════════════════════
+Ningun agente en este entorno puede controlar la GUI de Swing (a
+diferencia de un navegador web), por lo que el checklist visual/funcional
+de PASO 5 de FASE 1 sigue sin verificarse:
+
+  □ LoginView, FuncionariosView, CategoriasView, RecursosView,
+    ReservasView, EstadisticasView, ActividadesView,
+    CalendarizacionView, CambiarClaveView — mismos colores, layouts,
+    botones y componentes (deberian ser identicos: no se toco codigo de
+    construccion de UI)
+  □ LOGIN: credenciales incorrectas, login admin/funcionario, tabs
+    correctos por rol, cambiar clave desde login
+  □ FUNCIONARIOS / CATEGORIAS / RECURSOS: CRUD, PDF, seleccionarFila
+  □ CATEGORIAS: error al eliminar con recursos asociados
+  □ RESERVAS: crear, solapamiento, IA (incluyendo BUG-M1: verificar que
+    las categorias sugeridas por la IA ahora queden preseleccionadas),
+    cancelar, PDF
+  □ ESTADISTICAS: graficos de barras, estilos identicos
+  □ ACTIVIDADES / CALENDARIZACION: tabla, PDF
+  □ CAMBIAR CLAVE: desde login y desde el menu principal
+  □ CERRAR SESION: vuelve a login, relogin funciona
+  □ PERSISTENCIA: los datos persisten correctamente en data.xml
+
+Recomendacion ya comunicada: ejecutar la app desde el IDE (Run de
+ApplicationLogin.main() en IntelliJ) en vez de `mvn exec:java`, para
+evitar el problema de classloader con el Marshaller de JAXB detectado
+bajo exec-maven-plugin (no relacionado con el codigo de la app).
+
+Recien cuando el usuario confirme que esta prueba visual/funcional salio
+bien, se procedera a decidir la estructura de commit(s) pendiente.
+
+════════════════════════════════════════════════════
+FIN DEL REPORTE.
+Compilacion: BUILD SUCCESS. Tests: 85/85 en verde. Commits: 0 en esta
+sesion (pendiente de aprobacion tras prueba manual). Estructura de
+paquetes: conforme al objetivo de FASE 1 (sin model/, sin Service.java).
+════════════════════════════════════════════════════

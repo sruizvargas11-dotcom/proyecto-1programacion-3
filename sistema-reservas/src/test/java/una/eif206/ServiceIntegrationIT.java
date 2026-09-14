@@ -1,17 +1,22 @@
 package una.eif206;
 
 import una.eif206.data.Data;
-import una.eif206.logic.CategoriaRecurso;
-import una.eif206.logic.Funcionario;
-import una.eif206.logic.Recurso;
-import una.eif206.logic.Reserva;
-import una.eif206.logic.Service;
-import una.eif206.logic.Usuario;
-import una.eif206.logic.enums.EstadoReserva;
+import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Funcionario;
+import una.eif206.model.Recurso;
+import una.eif206.model.Reserva;
+import una.eif206.model.Usuario;
+import una.eif206.model.enums.EstadoReserva;
+import una.eif206.service.CalendarioService;
+import una.eif206.service.CategoriaService;
+import una.eif206.service.EstadisticasService;
+import una.eif206.service.FuncionarioService;
+import una.eif206.service.RecursoService;
+import una.eif206.service.ReservaService;
+import una.eif206.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -19,132 +24,144 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceIntegrationIT {
 
-    private Service service;
+    private UsuarioService usuarioService;
+    private FuncionarioService funcionarioService;
+    private CategoriaService categoriaService;
+    private RecursoService recursoService;
+    private ReservaService reservaService;
+    private EstadisticasService estadisticasService;
+    private CalendarioService calendarioService;
 
     @BeforeEach
-    void resetData() throws Exception {
-        service = Service.instance();
-        Field dataField = Service.class.getDeclaredField("data");
-        dataField.setAccessible(true);
-        dataField.set(service, new Data());
+    void resetData() {
+        Data data = new Data();
+        usuarioService = new UsuarioService(data);
+        funcionarioService = new FuncionarioService(data);
+        categoriaService = new CategoriaService(data);
+        recursoService = new RecursoService(data);
+        reservaService = new ReservaService(data);
+        estadisticasService = new EstadisticasService(data);
+        calendarioService = new CalendarioService(data);
     }
 
     @Test
-    void testFlujoCompletoFuncionario() throws Exception {
-        service.createFuncionario(new Funcionario("444", "Ana Ramirez", "Ventas", "5555"));
+    void testFlujoCompletoFuncionario() {
+        funcionarioService.create(new Funcionario("444", "Ana Ramirez", "Ventas", "5555"));
 
-        Funcionario creado = service.findFuncionarioById("444");
+        Funcionario creado = funcionarioService.findById("444");
         assertEquals("Ana Ramirez", creado.getNombre());
 
-        service.updateFuncionario(new Funcionario("444", "Ana Maria Ramirez", "Ventas", "6666"));
-        Funcionario actualizado = service.findFuncionarioById("444");
+        funcionarioService.update(new Funcionario("444", "Ana Maria Ramirez", "Ventas", "6666"));
+        Funcionario actualizado = funcionarioService.findById("444");
         assertEquals("Ana Maria Ramirez", actualizado.getNombre());
         assertEquals("6666", actualizado.getTelefono());
 
-        service.deleteFuncionario(actualizado);
-        assertThrows(Exception.class, () -> service.findFuncionarioById("444"));
+        funcionarioService.delete(actualizado);
+        assertNull(funcionarioService.findById("444"));
     }
 
     @Test
-    void testFlujoCompletoCategoria() throws Exception {
+    void testFlujoCompletoCategoria() {
         CategoriaRecurso categoria = new CategoriaRecurso("", "Proyector");
-        service.createCategoria(categoria);
+        categoriaService.create(categoria);
 
-        List<CategoriaRecurso> encontradas = service.searchCategorias(new CategoriaRecurso("", "proyector"));
+        List<CategoriaRecurso> encontradas = categoriaService.search(new CategoriaRecurso("", "proyector"));
         assertTrue(encontradas.stream().anyMatch(c -> c.getId().equals(categoria.getId())));
 
-        service.deleteCategoria(categoria);
-        assertTrue(service.findAllCategorias().stream().noneMatch(c -> c.getId().equals(categoria.getId())));
+        categoriaService.delete(categoria);
+        assertTrue(categoriaService.findAll().stream().noneMatch(c -> c.getId().equals(categoria.getId())));
     }
 
     @Test
-    void testFlujoCompletoReserva() throws Exception {
-        Funcionario funcionario = service.findFuncionarioById("111");
-        Reserva reserva = new Reserva(service.generarIdReserva(), "Reunion de equipo",
+    void testFlujoCompletoReserva() {
+        Funcionario funcionario = funcionarioService.findById("111");
+        Reserva reserva = new Reserva(reservaService.generarId(), "Reunion de equipo",
                 "2026-01-15", "10:00", "11:00", funcionario);
+        reserva.setRecursos(List.of(recursoService.findAll().get(0)));
 
-        service.createReserva(reserva);
-        service.cancelarReserva(reserva);
+        reservaService.create(reserva);
+        reservaService.cancelar(reserva);
 
         assertEquals(EstadoReserva.CANCELADA, reserva.getEstado());
     }
 
     @Test
-    void testLoginYCambiarClave() throws Exception {
-        Usuario usuario = service.login("admin", "admin123");
-        service.cambiarClave(usuario, "admin123", "nuevaClaveSegura");
+    void testLoginYCambiarClave() {
+        Usuario usuario = usuarioService.login("admin", "admin123");
+        usuarioService.cambiarClave(usuario, "admin123", "nuevaClaveSegura");
 
-        Usuario relogueado = service.login("admin", "nuevaClaveSegura");
+        Usuario relogueado = usuarioService.login("admin", "nuevaClaveSegura");
         assertNotNull(relogueado);
 
-        assertThrows(Exception.class, () -> service.login("admin", "admin123"));
+        assertNull(usuarioService.login("admin", "admin123"));
     }
 
     @Test
-    void testFlujoCompletoReservaConSolapamiento() throws Exception {
-        Funcionario funcionario = service.findFuncionarioById("111");
-        CategoriaRecurso categoria = service.findAllCategorias().stream()
+    void testFlujoCompletoReservaConSolapamiento() {
+        Funcionario funcionario = funcionarioService.findById("111");
+        CategoriaRecurso categoria = categoriaService.findAll().stream()
                 .filter(c -> c.getId().equals("CAT-000002")).findFirst().orElseThrow();
-        Recurso recurso = service.findRecursosByCategoria(categoria).get(0);
+        Recurso recurso = recursoService.findByCategoria(categoria).get(0);
 
-        Reserva primera = new Reserva(service.generarIdReserva(), "Reunion 1", "2026-04-01",
+        Reserva primera = new Reserva(reservaService.generarId(), "Reunion 1", "2026-04-01",
                 "09:00", "11:00", funcionario);
         primera.setRecursos(List.of(recurso));
-        service.createReserva(primera);
+        reservaService.create(primera);
 
-        Reserva solapada = new Reserva(service.generarIdReserva(), "Reunion 2", "2026-04-01",
+        Reserva solapada = new Reserva(reservaService.generarId(), "Reunion 2", "2026-04-01",
                 "10:00", "12:00", funcionario);
         solapada.setRecursos(List.of(recurso));
-        assertThrows(Exception.class, () -> service.createReserva(solapada));
+        assertNotNull(reservaService.create(solapada));
 
-        Reserva sinSolape = new Reserva(service.generarIdReserva(), "Reunion 3", "2026-04-01",
+        Reserva sinSolape = new Reserva(reservaService.generarId(), "Reunion 3", "2026-04-01",
                 "11:00", "13:00", funcionario);
         sinSolape.setRecursos(List.of(recurso));
-        service.createReserva(sinSolape);
-        assertTrue(service.findAllReservas().stream().anyMatch(r -> r.getId().equals(sinSolape.getId())));
+        reservaService.create(sinSolape);
+        assertTrue(reservaService.findAll().stream().anyMatch(r -> r.getId().equals(sinSolape.getId())));
 
-        service.cancelarReserva(primera);
+        reservaService.cancelar(primera);
         assertEquals(EstadoReserva.CANCELADA, primera.getEstado());
     }
 
     @Test
     void testFlujoEstadisticas() throws Exception {
-        Funcionario funcionario = service.findFuncionarioById("111");
-        CategoriaRecurso categoria = service.findAllCategorias().get(0);
-        Recurso recurso = service.findRecursosByCategoria(categoria).get(0);
+        Funcionario funcionario = funcionarioService.findById("111");
+        CategoriaRecurso categoria = categoriaService.findAll().get(0);
+        Recurso recurso = recursoService.findByCategoria(categoria).get(0);
 
-        Reserva r1 = new Reserva(service.generarIdReserva(), "Capacitacion", "2026-05-01", "09:00", "10:00", funcionario);
+        Reserva r1 = new Reserva(reservaService.generarId(), "Capacitacion", "2026-05-01", "09:00", "10:00", funcionario);
         r1.setRecursos(List.of(recurso));
-        service.createReserva(r1);
+        reservaService.create(r1);
 
-        Reserva r2 = new Reserva(service.generarIdReserva(), "Capacitacion", "2026-05-02", "09:00", "10:00", funcionario);
+        Reserva r2 = new Reserva(reservaService.generarId(), "Capacitacion", "2026-05-02", "09:00", "10:00", funcionario);
         r2.setRecursos(List.of(recurso));
-        service.createReserva(r2);
+        reservaService.create(r2);
 
-        Reserva r3 = new Reserva(service.generarIdReserva(), "Revision de proyecto", "2026-05-03", "09:00", "10:00", funcionario);
-        service.createReserva(r3);
+        Reserva r3 = new Reserva(reservaService.generarId(), "Revision de proyecto", "2026-05-03", "09:00", "10:00", funcionario);
+        r3.setRecursos(List.of(recursoService.findByCategoria(categoria).get(1)));
+        reservaService.create(r3);
 
-        Map<String, Integer> estadisticasRecursos = service.getEstadisticasRecursos("2026-05-01", "2026-05-03");
+        Map<String, Integer> estadisticasRecursos = estadisticasService.getEstadisticasRecursos("2026-05-01", "2026-05-03");
         assertEquals(2, estadisticasRecursos.getOrDefault(recurso.getDescripcion(), 0));
 
-        Map<String, Integer> estadisticasActividades = service.getEstadisticasActividades("2026-05-01", "2026-05-03");
+        Map<String, Integer> estadisticasActividades = estadisticasService.getEstadisticasActividades("2026-05-01", "2026-05-03");
         assertEquals(2, estadisticasActividades.getOrDefault("Capacitacion", 0));
         assertEquals(1, estadisticasActividades.getOrDefault("Revision de proyecto", 0));
     }
 
     @Test
-    void testFlujoCalendarizacion() throws Exception {
-        Funcionario funcionario = service.findFuncionarioById("111");
-        CategoriaRecurso categoria = service.findAllCategorias().stream()
+    void testFlujoCalendarizacion() {
+        Funcionario funcionario = funcionarioService.findById("111");
+        CategoriaRecurso categoria = categoriaService.findAll().stream()
                 .filter(c -> c.getId().equals("CAT-000002")).findFirst().orElseThrow();
-        Recurso recurso = service.findRecursosByCategoria(categoria).get(0);
+        Recurso recurso = recursoService.findByCategoria(categoria).get(0);
 
-        Reserva reserva = new Reserva(service.generarIdReserva(), "Sesion de Planificacion", "2026-06-01",
+        Reserva reserva = new Reserva(reservaService.generarId(), "Sesion de Planificacion", "2026-06-01",
                 "10:00", "11:00", funcionario);
         reserva.setRecursos(List.of(recurso));
-        service.createReserva(reserva);
+        reservaService.create(reserva);
 
-        String[][] matriz = service.getCalendario("2026-06-01", categoria);
+        String[][] matriz = calendarioService.getCalendario("2026-06-01", categoria);
 
         int filaDiezHoras = -1;
         for (int i = 0; i < matriz.length; i++) {

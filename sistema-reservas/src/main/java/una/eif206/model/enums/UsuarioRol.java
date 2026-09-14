@@ -1,4 +1,4 @@
-package una.eif206.logic.enums;
+package una.eif206.model.enums;
 
 public enum UsuarioRol {
     ADMIN,

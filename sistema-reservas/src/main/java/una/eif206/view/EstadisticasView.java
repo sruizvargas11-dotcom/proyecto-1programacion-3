@@ -8,20 +8,18 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.EstadisticasController;
-import una.eif206.model.EstadisticasModel;
 import una.eif206.util.IconLoader;
 import una.eif206.util.PdfReporter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EstadisticasView implements PropertyChangeListener {
+public class EstadisticasView {
 
     private static final SimpleDateFormat FORMATO_ISO = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -33,8 +31,10 @@ public class EstadisticasView implements PropertyChangeListener {
     private ChartPanel panelRecursos;
     private ChartPanel panelActividades;
 
+    private Map<String, Integer> datosRecursos = new LinkedHashMap<>();
+    private Map<String, Integer> datosActividades = new LinkedHashMap<>();
+
     EstadisticasController controller;
-    EstadisticasModel model;
 
     public EstadisticasView() {
         panel      = new JPanel(new BorderLayout(5, 5));
@@ -78,23 +78,19 @@ public class EstadisticasView implements PropertyChangeListener {
 
         generarFld.addActionListener(e -> {
             if (validate()) {
-                try {
-                    String desde = FORMATO_ISO.format(desdeFld.getDate());
-                    String hasta = FORMATO_ISO.format(hastaFld.getDate());
-                    controller.generar(desde, hasta);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(panel, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                String desde = FORMATO_ISO.format(desdeFld.getDate());
+                String hasta = FORMATO_ISO.format(hastaFld.getDate());
+                controller.generar(desde, hasta);
             }
         });
 
         imprimirFld.addActionListener(e -> {
             List<String[]> filasRecursos = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : model.getDatosRecursos().entrySet()) {
+            for (Map.Entry<String, Integer> entry : datosRecursos.entrySet()) {
                 filasRecursos.add(new String[]{entry.getKey(), String.valueOf(entry.getValue())});
             }
             List<String[]> filasActividades = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : model.getDatosActividades().entrySet()) {
+            for (Map.Entry<String, Integer> entry : datosActividades.entrySet()) {
                 filasActividades.add(new String[]{entry.getKey(), String.valueOf(entry.getValue())});
             }
 
@@ -110,7 +106,6 @@ public class EstadisticasView implements PropertyChangeListener {
 
     public JPanel getPanel() { return panel; }
     public void setController(EstadisticasController c) { this.controller = c; }
-    public void setModel(EstadisticasModel m) { this.model = m; model.addPropertyChangeListener(this); }
 
     private boolean validate() {
         boolean valid = true;
@@ -133,18 +128,15 @@ public class EstadisticasView implements PropertyChangeListener {
         return dataset;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case EstadisticasModel.DATOS_RECURSOS:
-                panelRecursos.getChart().getCategoryPlot()
-                        .setDataset(toDataset(model.getDatosRecursos(), "Reservas"));
-                break;
-            case EstadisticasModel.DATOS_ACTIVIDADES:
-                panelActividades.getChart().getCategoryPlot()
-                        .setDataset(toDataset(model.getDatosActividades(), "Reservas"));
-                break;
-        }
+    public void mostrarGraficos(Map<String, Integer> datosRecursos, Map<String, Integer> datosActividades) {
+        this.datosRecursos = datosRecursos;
+        this.datosActividades = datosActividades;
+        panelRecursos.getChart().getCategoryPlot().setDataset(toDataset(datosRecursos, "Reservas"));
+        panelActividades.getChart().getCategoryPlot().setDataset(toDataset(datosActividades, "Reservas"));
         panel.revalidate();
+    }
+
+    public void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(panel, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

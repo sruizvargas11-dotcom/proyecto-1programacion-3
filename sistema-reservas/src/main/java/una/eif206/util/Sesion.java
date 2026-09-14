@@ -1,6 +1,6 @@
 package una.eif206.util;
 
-import una.eif206.logic.Usuario;
+import una.eif206.model.Usuario;
 
 public class Sesion {
 
