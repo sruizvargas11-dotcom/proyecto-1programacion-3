@@ -35,6 +35,8 @@ public class FuncionarioService {
         if (result != null) return "Funcionario ya existe";
         if (e.getClave() == null || e.getClave().isEmpty())
             e.setClave(e.getId());
+        if (e.getRol() == null)
+            e.setRol(una.eif206.model.enums.UsuarioRol.FUNCIONARIO);
         data.getFuncionarios().add(e);
         return null;
     }
