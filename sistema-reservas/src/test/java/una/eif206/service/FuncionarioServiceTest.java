@@ -27,6 +27,15 @@ public class FuncionarioServiceTest {
     }
 
     @Test
+    void crearFuncionarioClaveIgualAlId() {
+        Funcionario nuevo = new Funcionario("F100", "Nuevo Funcionario", "TI", "1234");
+        nuevo.setClave("");
+        String error = funcionarioService.create(nuevo);
+        assertNull(error);
+        assertEquals("F100", nuevo.getClave());
+    }
+
+    @Test
     void crearFuncionarioDuplicado() {
         String error = funcionarioService.create(new Funcionario("111", "Otro Nombre", "TI", "0000"));
         assertNotNull(error);

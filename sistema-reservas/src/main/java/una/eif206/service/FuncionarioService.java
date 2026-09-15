@@ -33,6 +33,8 @@ public class FuncionarioService {
                 .filter(i -> i.getId().equals(e.getId()))
                 .findFirst().orElse(null);
         if (result != null) return "Funcionario ya existe";
+        if (e.getClave() == null || e.getClave().isEmpty())
+            e.setClave(e.getId());
         data.getFuncionarios().add(e);
         return null;
     }
