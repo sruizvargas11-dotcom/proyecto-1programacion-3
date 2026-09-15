@@ -1,0 +1,173 @@
+REPORTE DE VERIFICACION DEL ENUNCIADO
+Sistema de Reserva de Recursos
+Fecha: 2026-09-14
+(Solo verificacion, no se modifico codigo)
+
+═══════════════════════════════════════════════════════════════
+1 — RESERVAS (25%)
+═══════════════════════════════════════════════════════════════
+
+1.1 ReservaService.create() / disponibilidad
+⚠️ IMPLEMENTADO PARCIALMENTE
+- La busqueda del PRIMER recurso disponible SI existe y funciona:
+  ReservaService.buscarRecursoDisponible() (linea 86) recorre
+  data.getRecursos() en orden y devuelve el primero libre de la
+  categoria en esa fecha/hora. Se invoca correctamente desde
+  ReservasController.create() (linea 61), una vez por cada
+  categoria seleccionada.
+- FALTA: cuando una categoria no tiene recurso disponible, el
+  controller hace "return" inmediato en el primer fallo
+  (ReservasController.java linea 63-66), por lo que si el usuario
+  selecciono varias categorias y MAS DE UNA no tiene disponibilidad,
+  solo se informa la PRIMERA que falla, no "cuales" (plural) no
+  estan disponibles como pide el enunciado. Deberia acumular todas
+  las categorias sin recurso y reportarlas juntas.
+- La reserva SI guarda los IDs de los recursos asignados
+  (Reserva.recursos, tipo List<Recurso> con @XmlIDREF) — se
+  persisten correctamente en data.xml.
+
+1.2 ReservasView — tabla y mensajes
+❌ NO IMPLEMENTADO (columna Recursos)
+- La tabla de reservas (ReservasView.java linea 44-48) solo tiene
+  columnas: ID, Actividad, Fecha, Hora Inicio, Hora Fin, Estado.
+  NO existe columna "Recursos" que muestre los IDs asignados,
+  aunque el dato si se guarda en el modelo (ver 1.1).
+⚠️ Mensaje de error de solapamiento: solo indica la primera
+  categoria sin disponibilidad (ver hallazgo 1.1), no todas.
+
+1.3 Cancelar reserva
+⚠️ IMPLEMENTADO PARCIALMENTE
+- Liberar recursos: SI funciona, pero de forma implicita. Al
+  cancelar (ReservaService.cancelar(), linea 100) solo se cambia
+  el estado a CANCELADA; no hay una "liberacion" explicita, pero
+  como toda busqueda de disponibilidad filtra
+  "estado != CANCELADA", el recurso queda disponible de nuevo para
+  ese horario automaticamente. Funcionalmente correcto.
+- Solo reservas FUTURAS: ❌ NO IMPLEMENTADO. Ni
+  ReservasController.cancelar() ni ReservasView.edit() verifican
+  que la fecha de la reserva sea futura; el boton "Cancelar
+  reserva" se habilita para cualquier reserva ACTIVA sin importar
+  si la fecha ya paso (ReservasView.java linea 114-119,
+  ReservasController.java linea 88-106). Se puede cancelar una
+  reserva de una fecha pasada.
+
+═══════════════════════════════════════════════════════════════
+2 — PDF EN TODOS LOS MODULOS
+═══════════════════════════════════════════════════════════════
+✅ IMPLEMENTADO CORRECTAMENTE (los 7 modulos)
+Todos usan una implementacion real con iText (PdfReporter.java:
+genera PDF en disco con Document/PdfWriter, no solo imprime en
+pantalla):
+  ✅ FuncionariosView    — boton "Imprimir PDF" -> PdfReporter.imprimir()
+  ✅ CategoriasView      — boton "Imprimir PDF" -> PdfReporter.imprimir()
+  ✅ RecursosView        — boton "Imprimir PDF" -> PdfReporter.imprimir()
+  ✅ ReservasView        — boton "Imprimir PDF" -> PdfReporter.imprimirDesdeTabla()
+  ✅ CalendarizacionView — boton "Imprimir PDF" -> PdfReporter.imprimirDesdeTabla()
+  ✅ ActividadesView     — boton "Imprimir PDF" -> PdfReporter.imprimirDesdeTabla()
+  ✅ EstadisticasView    — boton "Imprimir PDF" -> PdfReporter.imprimirMultiple()
+    (unico modulo que junta 2 secciones/tablas en un mismo PDF)
+
+═══════════════════════════════════════════════════════════════
+3 — CALENDARIZACION
+═══════════════════════════════════════════════════════════════
+✅ IMPLEMENTADO CORRECTAMENTE
+- CalendarioService.getCalendario() (linea 28): filas = horas fijas
+  06:00-22:00, columnas = recursos de la categoria seleccionada.
+- Cada celda muestra "actividad - funcionario"
+  (CalendarioService.java linea 48-49:
+  r.getActividad() + " - " + funcionario.getNombre()).
+- Disponible tanto para ADMIN como FUNCIONARIO
+  (ApplicationLogin.java, tab "Calendarizacion" agregado en ambos
+  casos del switch, lineas 109 y 115).
+
+═══════════════════════════════════════════════════════════════
+4 — ACTIVIDADES
+═══════════════════════════════════════════════════════════════
+⚠️ IMPLEMENTADO PARCIALMENTE
+- La matriz semanal SI tiene filas = hora y columnas = Lunes a
+  Domingo (ActividadesService.NOMBRES_DIAS, ActividadesView tabla).
+- FALTA: las celdas SOLO muestran el nombre de la actividad
+  (ActividadesService.java linea 41: "textoNuevo =
+  reserva.getActividad()"). NO se concatena el funcionario, a
+  diferencia de CalendarizacionService que si lo hace. Esto
+  incumple el requisito "Las celdas muestran actividad Y
+  funcionario".
+- Disponible para ADMIN y FUNCIONARIO: ✅ (tab "Actividades" en
+  ambos casos, ApplicationLogin.java lineas 110 y 116).
+
+═══════════════════════════════════════════════════════════════
+5 — ESTADISTICAS
+═══════════════════════════════════════════════════════════════
+⚠️ IMPLEMENTADO PARCIALMENTE (agrupacion incorrecta en ambas secciones)
+- Recursos: el enunciado pide tabla de "categorias + cantidad",
+  pero EstadisticasService.getEstadisticasRecursos() (linea 20)
+  agrupa por RECURSO INDIVIDUAL (rec.getDescripcion()), no por
+  categoria. Ademas los ejes del grafico dicen "Recurso" en vez de
+  "Categoria" (EstadisticasView.java linea 61).
+- Actividades: el enunciado pide tabla de "semanas + cantidad",
+  pero EstadisticasService.getEstadisticasActividades() (linea 35)
+  agrupa por NOMBRE DE ACTIVIDAD (r.getActividad()), no por semana
+  del periodo. El eje dice "Actividad" en vez de "Semana"
+  (EstadisticasView.java linea 65).
+- Grafica de barras: ✅ SI se generan ambas graficas (JFreeChart,
+  ChartFactory.createBarChart) para Recursos y para Actividades.
+- PDF con ambas secciones juntas: ✅ SI, PdfReporter.imprimirMultiple()
+  genera un solo PDF con las 2 tablas/secciones.
+- Disponible para ADMIN y FUNCIONARIO: ✅.
+
+═══════════════════════════════════════════════════════════════
+6 — VALIDACIONES
+═══════════════════════════════════════════════════════════════
+✅ IMPLEMENTADO CORRECTAMENTE (con una observacion menor)
+- Todos los formularios pintan el campo en rojo
+  (BACKGROUND_ERROR) y bloquean el guardado si falta un dato
+  obligatorio; los errores de negocio se muestran con
+  JOptionPane (mostrarError).
+- FuncionariosView: valida ID y Nombre no vacios (linea 138-149). ✅
+- ReservasView: valida actividad, fecha, hora inicio/fin (formato
+  y orden), y que haya al menos una categoria seleccionada
+  (linea 154-184). ✅
+- CategoriasView: valida descripcion no vacia (linea 134-141). ✅
+- RecursosView: valida ID, descripcion y categoria (linea 147-162). ✅
+- Observacion menor: algunas validaciones solo estan en la vista
+  y no se repiten en el service (p. ej. RecursoService.create()
+  no valida id/descripcion vacios, solo categoria nula) — no es un
+  incumplimiento del enunciado pero es una capa de defensa que
+  falta si en el futuro se llama al service sin pasar por la vista.
+
+═══════════════════════════════════════════════════════════════
+7 — BUSQUEDAS
+═══════════════════════════════════════════════════════════════
+⚠️ IMPLEMENTADO PARCIALMENTE
+- FuncionariosView: ❌ SOLO busca por nombre. El unico campo de
+  busqueda ("Buscar:") se envia a
+  FuncionariosController.search(nombre) -> FuncionarioService.search()
+  (linea 21-25), que filtra unicamente por
+  nombre.toLowerCase().contains(...). NO existe forma de buscar
+  por ID desde la UI, aunque FuncionarioService.findById() existe
+  en el codigo, no esta conectado a ningun boton/campo de busqueda
+  de la vista.
+- CategoriasView: ✅ busca por descripcion correctamente
+  (CategoriaService.search(), contains case-insensitive).
+- RecursosView: ✅ filtra por categoria mediante combo
+  "Filtrar por categoria" -> RecursoService.findByCategoria().
+
+═══════════════════════════════════════════════════════════════
+RESUMEN DE PENDIENTES (para priorizar)
+═══════════════════════════════════════════════════════════════
+1. Reservas (25%): agrupar TODAS las categorias no disponibles en
+   un solo mensaje (no solo la primera); agregar columna
+   "Recursos" en la tabla de ReservasView; restringir cancelar
+   solo a reservas con fecha futura.
+2. Estadisticas: reagrupar "Recursos" por CATEGORIA (no por
+   recurso individual) y "Actividades" por SEMANA (no por nombre
+   de actividad), ajustando tambien los rotulos de los ejes.
+3. Actividades: agregar el nombre del funcionario en cada celda
+   de la matriz (hoy solo aparece la actividad).
+4. Busquedas: agregar busqueda por ID en FuncionariosView (ya
+   existe FuncionarioService.findById(), falta conectarlo a la UI).
+
+Lo demas (Login/CambiarClave, CRUD de Funcionarios/Categorias/
+Recursos, PDF en los 7 modulos, Calendarizacion, validaciones de
+formulario y roles Admin/Funcionario) esta correctamente
+implementado.

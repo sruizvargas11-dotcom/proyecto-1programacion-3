@@ -9,6 +9,8 @@ import una.eif206.model.enums.EstadoReserva;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,7 +73,7 @@ public class ReservaServiceTest {
 
     @Test
     void cancelarReservaActiva() {
-        Reserva reserva = nuevaReserva("Reunion", "2026-02-10", "09:00", "10:00");
+        Reserva reserva = nuevaReserva("Reunion", "2027-02-10", "09:00", "10:00");
         reservaService.create(reserva);
 
         String error = reservaService.cancelar(reserva);
@@ -82,7 +84,7 @@ public class ReservaServiceTest {
 
     @Test
     void cancelarReservaYaCandelada() {
-        Reserva reserva = nuevaReserva("Reunion", "2026-02-10", "09:00", "10:00");
+        Reserva reserva = nuevaReserva("Reunion", "2027-02-10", "09:00", "10:00");
         reservaService.create(reserva);
 
         reservaService.cancelar(reserva);
@@ -136,5 +138,58 @@ public class ReservaServiceTest {
         Reserva reserva = new Reserva(reservaService.generarId(), "Reunion", "2026-02-10", "09:00", "10:00", funcionario);
         String error = reservaService.create(reserva);
         assertNotNull(error);
+    }
+
+    @Test
+    void tablaReservaConColumnaRecursos() {
+        Reserva reserva = nuevaReserva("Reunion", "2026-02-10", "09:00", "10:00");
+
+        String error = reservaService.create(reserva);
+
+        assertNull(error);
+        assertFalse(reserva.getRecursos().isEmpty());
+    }
+
+    @Test
+    void errorMuestraTodasCategoriasNoDisponibles() {
+        CategoriaRecurso categoriaConRecurso = categoriaService.findAll().stream()
+                .filter(c -> c.getId().equals("CAT-000002")).findFirst().orElseThrow();
+        CategoriaRecurso categoriaSinRecursos = categoriaService.findAll().stream()
+                .filter(c -> c.getId().equals("CAT-000003")).findFirst().orElseThrow();
+
+        Recurso salaDeJuntas = recursoService.findByCategoria(categoriaConRecurso).get(0);
+        Reserva ocupante = new Reserva(reservaService.generarId(), "Ocupa sala", "2026-04-01", "09:00", "10:00", funcionario);
+        ocupante.setRecursos(List.of(salaDeJuntas));
+        reservaService.create(ocupante);
+
+        List<Recurso> recursosAsignados = new ArrayList<>();
+        String error = reservaService.asignarRecursosDisponibles(
+                List.of(categoriaConRecurso, categoriaSinRecursos), "2026-04-01", "09:00", "10:00", recursosAsignados);
+
+        assertNotNull(error);
+        assertTrue(error.contains(categoriaConRecurso.getDescripcion()));
+        assertTrue(error.contains(categoriaSinRecursos.getDescripcion()));
+    }
+
+    @Test
+    void noPuedeCancelarReservaPasada() {
+        String ayer = LocalDate.now().minusDays(1).toString();
+        Reserva reserva = nuevaReserva("Reunion pasada", ayer, "09:00", "10:00");
+        reservaService.create(reserva);
+
+        String error = reservaService.cancelar(reserva);
+
+        assertNotNull(error);
+    }
+
+    @Test
+    void puedeCancelarReservaFutura() {
+        String manana = LocalDate.now().plusDays(1).toString();
+        Reserva reserva = nuevaReserva("Reunion futura", manana, "09:00", "10:00");
+        reservaService.create(reserva);
+
+        String error = reservaService.cancelar(reserva);
+
+        assertNull(error);
     }
 }

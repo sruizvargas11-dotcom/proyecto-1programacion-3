@@ -170,7 +170,7 @@ public class ServiceTest {
     @Test
     void testCancelarReserva() {
         Funcionario funcionario = funcionarioService.findById("111");
-        Reserva reserva = new Reserva(reservaService.generarId(), "Reunion", "2026-02-10",
+        Reserva reserva = new Reserva(reservaService.generarId(), "Reunion", "2027-02-10",
                 "09:00", "10:00", funcionario);
         reserva.setRecursos(List.of(recursoService.findAll().get(0)));
         reservaService.create(reserva);

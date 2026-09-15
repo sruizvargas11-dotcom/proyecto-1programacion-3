@@ -24,6 +24,19 @@ public class FuncionarioService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Busca por ID exacto; si no hay coincidencia, busca por nombre (contiene).
+     */
+    public List<Funcionario> search(String texto) {
+        Funcionario porId = findById(texto);
+        if (porId != null) {
+            return List.of(porId);
+        }
+        Funcionario filtro = new Funcionario();
+        filtro.setNombre(texto);
+        return search(filtro);
+    }
+
     public String create(Funcionario e) {
         if (e.getId() == null || e.getId().trim().isEmpty()
                 || e.getNombre() == null || e.getNombre().trim().isEmpty()) {

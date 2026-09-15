@@ -7,8 +7,10 @@ import una.eif206.model.Recurso;
 import una.eif206.model.Reserva;
 import una.eif206.model.enums.EstadoReserva;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -97,11 +99,38 @@ public class ReservaService {
         return null;
     }
 
+    /**
+     * Busca el primer recurso disponible para cada categoria solicitada.
+     * Los recursos asignados se agregan a recursosAsignados; si alguna
+     * categoria no tiene recurso disponible, retorna un error indicando
+     * TODAS las categorias sin disponibilidad.
+     */
+    public String asignarRecursosDisponibles(List<CategoriaRecurso> categorias, String fecha,
+                                              String horaInicio, String horaFin, List<Recurso> recursosAsignados) {
+        List<String> categoriasSinDisponibilidad = new ArrayList<>();
+        for (CategoriaRecurso categoria : categorias) {
+            Recurso disponible = buscarRecursoDisponible(categoria, fecha, horaInicio, horaFin);
+            if (disponible == null) {
+                categoriasSinDisponibilidad.add(categoria.getDescripcion());
+            } else {
+                recursosAsignados.add(disponible);
+            }
+        }
+        if (!categoriasSinDisponibilidad.isEmpty()) {
+            return "No hay recursos disponibles para: " + String.join(", ", categoriasSinDisponibilidad);
+        }
+        return null;
+    }
+
     public String cancelar(Reserva r) {
         Reserva result = data.getReservas().stream()
                 .filter(i -> i.getId().equals(r.getId()))
                 .findFirst().orElse(null);
         if (result == null) return "Reserva no encontrada";
+        LocalDate fecha = LocalDate.parse(result.getFecha());
+        if (!fecha.isAfter(LocalDate.now())) {
+            return "Solo se pueden cancelar reservas con fecha futura";
+        }
         result.setEstado(EstadoReserva.CANCELADA);
         return null;
     }

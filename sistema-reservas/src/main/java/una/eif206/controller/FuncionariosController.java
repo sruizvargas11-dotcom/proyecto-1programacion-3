@@ -95,14 +95,7 @@ public class FuncionariosController {
     }
 
     public void search(String texto) {
-        Funcionario porId = funcionarioService.findById(texto);
-        if (porId != null) {
-            listaActual = new ArrayList<>(List.of(porId));
-        } else {
-            Funcionario f = new Funcionario();
-            f.setNombre(texto);
-            listaActual = funcionarioService.search(f);
-        }
+        listaActual = funcionarioService.search(texto);
         vista.cargarTabla(listaActual);
     }
 }

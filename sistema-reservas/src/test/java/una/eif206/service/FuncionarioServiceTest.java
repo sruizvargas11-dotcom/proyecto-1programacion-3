@@ -85,4 +85,13 @@ public class FuncionarioServiceTest {
         String error = funcionarioService.delete(inexistente);
         assertNotNull(error);
     }
+
+    @Test
+    void buscarPorIdExacto() {
+        funcionarioService.create(new Funcionario("F999", "Empleado Especial", "TI", "0000"));
+
+        List<Funcionario> resultado = funcionarioService.search("F999");
+
+        assertTrue(resultado.stream().anyMatch(f -> f.getId().equals("F999")));
+    }
 }
