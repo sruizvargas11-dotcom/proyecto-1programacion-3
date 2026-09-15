@@ -18,6 +18,8 @@ import una.eif206.service.UsuarioService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -323,7 +325,7 @@ public class ServiceTest {
 
         Map<String, Integer> estadisticas = estadisticasService.getEstadisticasRecursos("2026-03-01", "2026-03-01");
 
-        assertTrue(estadisticas.getOrDefault(recurso.getDescripcion(), 0) > 0);
+        assertTrue(estadisticas.getOrDefault(categoria.getDescripcion(), 0) > 0);
     }
 
     @Test
@@ -336,8 +338,9 @@ public class ServiceTest {
 
         Map<String, Integer> estadisticas = estadisticasService.getEstadisticasActividades("2026-03-01", "2026-03-10");
 
-        assertTrue(estadisticas.containsKey("Capacitacion"));
-        assertEquals(1, estadisticas.get("Capacitacion"));
+        String semana = LocalDate.of(2026, 3, 5).with(DayOfWeek.MONDAY).toString();
+        assertTrue(estadisticas.containsKey(semana));
+        assertEquals(1, estadisticas.get(semana));
     }
 
     // ===================== CALENDARIZACION =====================

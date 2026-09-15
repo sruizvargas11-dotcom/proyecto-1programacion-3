@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooser;
 import una.eif206.ApplicationLogin;
 import una.eif206.controller.ReservasController;
 import una.eif206.model.CategoriaRecurso;
+import una.eif206.model.Recurso;
 import una.eif206.model.Reserva;
 import una.eif206.util.Highlighter;
 import una.eif206.util.IconLoader;
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReservasView {
 
@@ -42,7 +44,7 @@ public class ReservasView {
     private JTable tabla;
 
     private final DefaultTableModel modeloTabla = new DefaultTableModel(
-            new Object[]{"ID", "Actividad", "Fecha", "Hora Inicio", "Hora Fin", "Estado"}, 0) {
+            new Object[]{"ID", "Actividad", "Fecha", "Hora Inicio", "Hora Fin", "Estado", "Recursos"}, 0) {
         @Override
         public boolean isCellEditable(int row, int col) { return false; }
     };
@@ -222,8 +224,10 @@ public class ReservasView {
         filas = lista;
         modeloTabla.setRowCount(0);
         for (Reserva r : lista) {
+            String recursos = r.getRecursos() == null ? "" : r.getRecursos().stream()
+                    .map(Recurso::getId).collect(Collectors.joining(", "));
             modeloTabla.addRow(new Object[]{r.getId(), r.getActividad(), r.getFecha(),
-                    r.getHoraInicio(), r.getHoraFin(), r.getEstado()});
+                    r.getHoraInicio(), r.getHoraFin(), r.getEstado(), recursos});
         }
     }
 

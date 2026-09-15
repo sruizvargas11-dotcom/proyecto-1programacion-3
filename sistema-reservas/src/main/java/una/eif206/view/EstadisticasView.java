@@ -58,11 +58,11 @@ public class EstadisticasView {
         filtros.add(imprimirFld);
 
         JFreeChart chartRecursos = ChartFactory.createBarChart(
-                "Recursos más reservados", "Recurso", "Cantidad",
+                "Recursos más reservados", "Categoría", "Cantidad",
                 new DefaultCategoryDataset(), PlotOrientation.VERTICAL,
                 false, true, false);
         JFreeChart chartActividades = ChartFactory.createBarChart(
-                "Actividades más frecuentes", "Actividad", "Cantidad",
+                "Actividades más frecuentes", "Semana", "Cantidad",
                 new DefaultCategoryDataset(), PlotOrientation.VERTICAL,
                 false, true, false);
 
@@ -96,9 +96,9 @@ public class EstadisticasView {
 
             List<PdfReporter.Seccion> secciones = new ArrayList<>();
             secciones.add(new PdfReporter.Seccion("Recursos más reservados",
-                    new String[]{"Recurso", "Cantidad"}, filasRecursos));
+                    new String[]{"Categoría", "Cantidad"}, filasRecursos));
             secciones.add(new PdfReporter.Seccion("Actividades más frecuentes",
-                    new String[]{"Actividad", "Cantidad"}, filasActividades));
+                    new String[]{"Semana", "Cantidad"}, filasActividades));
 
             PdfReporter.imprimirMultiple(panel, "Reporte de Estadísticas", secciones);
         });

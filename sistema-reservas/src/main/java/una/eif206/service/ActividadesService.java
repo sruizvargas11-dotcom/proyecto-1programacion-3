@@ -38,7 +38,8 @@ public class ActividadesService {
             String dia = NOMBRES_DIAS[fecha.getDayOfWeek().getValue() - 1];
             Map<String, String> fila = matriz.computeIfAbsent(reserva.getHoraInicio(), k -> new LinkedHashMap<>());
             String textoExistente = fila.get(dia);
-            String textoNuevo = reserva.getActividad();
+            String funcionarioNombre = reserva.getFuncionario() != null ? reserva.getFuncionario().getNombre() : "";
+            String textoNuevo = reserva.getActividad() + " - " + funcionarioNombre;
             if (textoExistente != null && !textoExistente.isEmpty()) {
                 textoNuevo = textoExistente + "; " + textoNuevo;
             }

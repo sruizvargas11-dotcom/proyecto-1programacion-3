@@ -94,10 +94,15 @@ public class FuncionariosController {
         vista.setTelefono(current.getTelefono());
     }
 
-    public void search(String nombre) {
-        Funcionario f = new Funcionario();
-        f.setNombre(nombre);
-        listaActual = funcionarioService.search(f);
+    public void search(String texto) {
+        Funcionario porId = funcionarioService.findById(texto);
+        if (porId != null) {
+            listaActual = new ArrayList<>(List.of(porId));
+        } else {
+            Funcionario f = new Funcionario();
+            f.setNombre(texto);
+            listaActual = funcionarioService.search(f);
+        }
         vista.cargarTabla(listaActual);
     }
 }

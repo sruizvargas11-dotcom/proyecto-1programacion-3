@@ -58,13 +58,18 @@ public class ReservasController {
             Funcionario funcionario = (Funcionario) Sesion.getUsuario();
 
             List<Recurso> recursos = new ArrayList<>();
+            List<String> categoriasSinDisponibilidad = new ArrayList<>();
             for (CategoriaRecurso categoria : categoriasSeleccionadas) {
                 Recurso disponible = reservaService.buscarRecursoDisponible(categoria, fecha, horaInicio, horaFin);
                 if (disponible == null) {
-                    vista.mostrarError("No hay recurso disponible de la categoria: " + categoria.getDescripcion());
-                    return;
+                    categoriasSinDisponibilidad.add(categoria.getDescripcion());
+                } else {
+                    recursos.add(disponible);
                 }
-                recursos.add(disponible);
+            }
+            if (!categoriasSinDisponibilidad.isEmpty()) {
+                vista.mostrarError("No hay recursos disponibles para: " + String.join(", ", categoriasSinDisponibilidad));
+                return;
             }
 
             Reserva reserva = new Reserva(reservaService.generarId(), actividad, fecha, horaInicio, horaFin, funcionario);
@@ -89,6 +94,11 @@ public class ReservasController {
         try {
             if (current == null) {
                 vista.mostrarError("Seleccione una reserva de la tabla.");
+                return;
+            }
+            LocalDate fechaReserva = LocalDate.parse(current.getFecha());
+            if (!fechaReserva.isAfter(LocalDate.now())) {
+                vista.mostrarError("Solo se pueden cancelar reservas con fecha futura");
                 return;
             }
             String error = reservaService.cancelar(current);
